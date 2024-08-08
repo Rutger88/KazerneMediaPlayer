@@ -1,0 +1,20 @@
+@startuml
+title Flowchart for getSharedLibraries Method
+
+start
+:Receive ownerId;
+:Pass ownerId to LibraryService;
+:Call getSharedLibraries(ownerId) in LibraryService;
+:LibraryService calls findAllByOwnerId(ownerId) in LibraryRepository;
+
+:Retrieve Libraries from LibraryRepository;
+if (Libraries Found?) then (yes)
+  :Return List of Libraries;
+  :Respond with 200 OK and List of Libraries;
+else (no)
+  :Return Empty List;
+  :Respond with 204 No Content;
+endif
+
+stop
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+title Flowchart for addLibrary Method
+
+start
+:Receive Library object;
+:Check if Library object is valid;
+
+if (Library object is valid?) then (yes)
+  :Pass Library to LibraryService;
+  :Call addLibrary(library) in LibraryService;
+  :LibraryService calls save(library) in LibraryRepository;
+
+  :Save Library to LibraryRepository;
+  if (Save Successful?) then (yes)
+    :Library saved to database;
+    :Return saved Library object;
+    :Respond with 200 OK and Library;
+  else (no)
+    :Return Error: "Failed to save Library";
+    :Respond with 500 Internal Server Error;
+  endif
+
+else (no)
+  :Return Error: "Invalid Library object";
+  :Respond with 400 Bad Request;
+endif
+
+stop
+@enduml

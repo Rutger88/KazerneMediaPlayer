@@ -1,0 +1,24 @@
+@startuml
+title Flowchart for startVisualizer Method
+
+start
+:Receive Request to Start Visualizer;
+:Check if Visualizer is Already Running;
+
+if (Visualizer Already Running?) then (yes)
+  :Return Error: "Visualizer Already Running";
+  :Respond with 400 Bad Request;
+else (no)
+  :Initialize Visualizer;
+  :Start Visualizer Process;
+  if (Visualizer Started Successfully?) then (yes)
+    :Return Success: "Visualizer Started Successfully";
+    :Respond with 200 OK;
+  else (no)
+    :Return Error: "Failed to Start Visualizer";
+    :Respond with 500 Internal Server Error;
+  endif
+endif
+
+stop
+@enduml

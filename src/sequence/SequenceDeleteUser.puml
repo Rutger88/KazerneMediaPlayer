@@ -1,0 +1,35 @@
+@startuml
+title Sequence Diagram for deleteUser Method
+
+actor User
+participant UserController
+participant UserService
+database UserRepository as DB
+
+User -> UserController: DELETE /users/{userId}
+activate UserController
+
+UserController -> UserService: deleteUser(userId)
+activate UserService
+
+UserService -> DB: existsById(userId)
+activate DB
+
+alt User Exists
+    DB --> UserService: true
+    UserService -> DB: deleteById(userId)
+    DB --> UserService: Deletion Confirmed
+    UserService -> UserController: Success Message
+    deactivate UserService
+    UserController -> User: 200 OK (User Deleted)
+else User Not Found
+    DB --> UserService: false
+    UserService -> UserController: Throw Exception
+    deactivate UserService
+    UserController -> User: 404 Not Found (Error: User not found)
+end
+
+deactivate UserController
+deactivate DB
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+title Sequence Diagram for stopMedia Method
+
+actor User
+participant MediaController
+participant MediaService
+
+User -> MediaController: POST /media/stop
+activate MediaController
+
+MediaController -> MediaService: stopMedia()
+activate MediaService
+
+alt Is currentlyPlaying not null?
+    MediaService -> MediaService: Set currentlyPlaying to null
+    deactivate MediaService
+
+    MediaService -> MediaController: Confirm Stop
+    deactivate MediaController
+
+    MediaController -> User: 200 OK (Stop Confirmed)
+else
+    MediaService -> MediaController: No Media Playing
+    deactivate MediaService
+
+    MediaController -> User: 200 OK (No Media Playing)
+end
+
+@enduml

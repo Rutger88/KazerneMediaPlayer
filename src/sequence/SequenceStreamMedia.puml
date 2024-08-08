@@ -1,0 +1,39 @@
+@startuml
+title Sequence Diagram for streamMedia Method
+
+actor User
+participant MediaController
+participant StreamingService
+participant MediaRepository
+
+User -> MediaController: GET /api/media/stream/{id}
+activate MediaController
+
+MediaController -> StreamingService: streamMedia(id)
+activate StreamingService
+
+StreamingService -> MediaRepository: findById(id)
+activate MediaRepository
+
+alt Media File Found
+    MediaRepository -> StreamingService: Optional<MediaFile> (found)
+    deactivate MediaRepository
+
+    StreamingService -> StreamingService: generateStreamingUrl(mediaFile)
+    StreamingService -> MediaController: streaming URL
+    deactivate StreamingService
+
+    MediaController -> User: 200 OK (streaming URL)
+    deactivate MediaController
+else Media File Not Found
+    MediaRepository -> StreamingService: Optional<MediaFile> (not found)
+    deactivate MediaRepository
+
+    StreamingService -> MediaController: throw MediaNotFoundException
+    deactivate StreamingService
+
+    MediaController -> User: 404 Not Found ("Media file with ID {id} not found")
+    deactivate MediaController
+end
+
+@enduml

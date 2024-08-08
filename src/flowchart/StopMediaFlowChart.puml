@@ -1,0 +1,15 @@
+@startuml
+title Flowchart for stopMedia Method
+
+start
+:Receive stopMedia request;
+:Check if currentlyPlaying is not null;
+if (currentlyPlaying != null?) then (yes)
+  :Set currentlyPlaying to null;
+  :Return Confirmation: "Stop Confirmed";
+else (no)
+  :Return Message: "No Media Playing";
+endif
+
+stop
+@enduml

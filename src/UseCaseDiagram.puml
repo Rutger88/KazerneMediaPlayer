@@ -1,0 +1,44 @@
+@startuml
+actor User
+actor RegisteredUser as "Registered User"
+
+rectangle "Media Player System" {
+
+  ' Use cases for all users
+  usecase "Upload Media" as UC1
+  usecase "Play Media" as UC2
+  usecase "Stop Media" as UC3
+  usecase "Play Next Media" as UC4
+  usecase "Play Previous Media" as UC5
+  usecase "Register User" as UC6
+  usecase "Login User" as UC7
+
+  ' Use cases for registered users
+  usecase "Get Shared Library" as UC8
+  usecase "Add Library" as UC9
+  usecase "Delete Library" as UC10
+  usecase "Delete User" as UC11
+
+  ' Relationships for all users
+  User --> UC1
+  User --> UC2
+  User --> UC3
+  User --> UC4
+  User --> UC5
+  User --> UC6
+
+  ' Relationships for registered users
+  RegisteredUser --> UC7
+  RegisteredUser --> UC8
+  RegisteredUser --> UC9
+  RegisteredUser --> UC10
+  RegisteredUser --> UC11
+
+  ' Show that registered users extend general user capabilities
+  UC6 -[#blue,dashed]-> UC7 : Registration Required
+  UC7 -[#blue,dashed]-> UC8 : Login Required
+  UC7 -[#blue,dashed]-> UC9 : Login Required
+  UC7 -[#blue,dashed]-> UC10 : Login Required
+  UC7 -[#blue,dashed]-> UC11 : Login Required
+}
+@enduml

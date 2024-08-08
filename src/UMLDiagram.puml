@@ -1,0 +1,191 @@
+@startuml
+!define RECTANGLE class
+
+title System Architecture Diagram
+
+package "Frontend (Angular)" {
+    RECTANGLE UserComponent {
+        - userService: UserService
+        + registerUser(user: User): void
+        + loginUser(credentials: Credentials): void
+        + deleteUser(credentials: Credentials): void
+    }
+
+    RECTANGLE LibraryComponent {
+        - libraryService: LibraryService
+        + getSharedLibraries(): void
+        + addLibrary(library: Library): void
+        + deleteLibrary(library: Library): void
+    }
+
+    RECTANGLE MediaComponent {
+        - mediaService: MediaService
+        + playMedia(media: MediaFile): void
+        + stopMedia(media: MediaFile): void
+        + pauseMedia(media: MediaFile): void
+        + nextMedia(media: MediaFile): void
+        + previousMedia(media: MediaFile): void
+        + uploadMedia(media: MediaFile): void
+    }
+
+    RECTANGLE VisualizerComponent {
+        - visualizerService: VisualizerService
+        + startVisualizer(): void
+        + stopVisualizer(): void
+    }
+
+    RECTANGLE UserService {
+        + registerUser(user: User): void
+        + loginUser(credentials: Credentials): void
+        + deleteUser(credentials: Credentials): void
+    }
+
+    RECTANGLE LibraryService {
+        + getSharedLibraries(): List<Library>
+        + addLibrary(library: Library): void
+        + deleteLibrary(library: Library): void
+    }
+
+    RECTANGLE MediaService {
+        + playMedia(media: MediaFile): void
+        + stopMedia(media: MediaFile): void
+        + pauseMedia(media: MediaFile): void
+        + nextMedia(media: MediaFile): void
+        + previousMedia(media: MediaFile): void
+        + uploadMedia(media: MediaFile): void
+    }
+
+    RECTANGLE VisualizerService {
+        + startVisualizer(): void
+        + stopVisualizer(): void
+    }
+}
+
+package "Backend (Spring Boot)" {
+    RECTANGLE UserController {
+        - userService: UserServiceBackend
+        + registerUser(user: User): ResponseEntity
+        + loginUser(credentials: Credentials): ResponseEntity
+        + deleteUser(credentials: Credentials): ResponseEntity
+    }
+
+    RECTANGLE LibraryController {
+        - libraryService: LibraryServiceBackend
+        + getSharedLibraries(): ResponseEntity<List<Library>>
+        + addLibrary(library: Library): ResponseEntity
+        + deleteLibrary(library: Library): ResponseEntity
+    }
+
+    RECTANGLE MediaController {
+        - mediaService: MediaServiceBackend
+        + playMedia(mediaId: Long): ResponseEntity
+        + stopMedia(mediaId: Long): ResponseEntity
+        + pauseMedia(mediaId: Long): ResponseEntity
+        + nextMedia(mediaId: Long): ResponseEntity
+        + previousMedia(mediaId: Long): ResponseEntity
+        + uploadMedia(mediaId: Long): ResponseEntity
+    }
+
+    RECTANGLE StreamingController {
+        - streamingService: StreamingService
+        + streamMedia(mediaId: Long): ResponseEntity
+    }
+
+    RECTANGLE UserServiceBackend {
+        - userRepository: UserRepository
+        + registerUser(user: User): User
+        + loginUser(credentials: Credentials): User
+        + deleteUser(credentials: Credentials): User
+    }
+
+    RECTANGLE LibraryServiceBackend {
+        - libraryRepository: LibraryRepository
+        + getSharedLibraries(): List<Library>
+        + addLibrary(library: Library): Library
+        + deleteLibrary(library: Library): Library
+    }
+
+    RECTANGLE MediaServiceBackend {
+        - mediaRepository: MediaRepository
+        + playMedia(mediaId: Long): MediaFile
+        + stopMedia(mediaId: Long): MediaFile
+        + pauseMedia(mediaId: Long): MediaFile
+        + nextMedia(mediaId: Long): MediaFile
+        + previousMedia(mediaId: Long): MediaFile
+        + uploadMedia(mediaId: Long): MediaFile
+    }
+
+    RECTANGLE StreamingService {
+        + streamMedia(mediaId: Long): MediaFile
+    }
+
+    RECTANGLE UserRepository {
+        + save(user: User): User
+        + findByUsername(username: String): User
+        + deleteById(userId: Long): void
+        + existsById(userId: Long): boolean
+    }
+
+    RECTANGLE LibraryRepository {
+        + save(library: Library): Library
+        + findAllByOwnerId(ownerId: Long): List<Library>
+        + delete(library: Library): void
+    }
+
+    RECTANGLE MediaRepository {
+        + save(media: MediaFile): MediaFile
+        + findById(mediaId: Long): MediaFile
+    }
+}
+
+RECTANGLE User {
+    - id: Long
+    - username: String
+    - password: String
+    - email: String
+}
+
+RECTANGLE Library {
+    - id: Long
+    - name: String
+    - owner: User
+    - mediaFiles: List<MediaFile>
+}
+
+RECTANGLE MediaFile {
+    - id: Long
+    - name: String
+    - type: String
+    - url: String
+    - library: Library
+}
+
+RECTANGLE Credentials {
+    - username: String
+    - password: String
+    - id: Long
+}
+
+' Relationships
+UserComponent --> UserService
+LibraryComponent --> LibraryService
+MediaComponent --> MediaService
+VisualizerComponent --> VisualizerService
+
+UserController --> UserServiceBackend
+LibraryController --> LibraryServiceBackend
+MediaController --> MediaServiceBackend
+StreamingController --> StreamingService
+
+UserServiceBackend --> UserRepository
+LibraryServiceBackend --> LibraryRepository
+MediaServiceBackend --> MediaRepository
+
+UserRepository --> User
+LibraryRepository --> Library
+MediaRepository --> MediaFile
+
+User --> Library : owns >
+Library --> MediaFile : contains >
+
+@enduml

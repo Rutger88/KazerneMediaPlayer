@@ -1,0 +1,44 @@
+@startuml
+title Sequence Diagram for addLibrary Method
+
+actor User
+participant LibraryController
+participant LibraryService
+database LibraryRepository as DB
+
+User -> LibraryController: POST /libraries (Library)
+activate LibraryController
+
+LibraryController -> LibraryController: Validate Library object
+alt Library object is valid
+  LibraryController -> LibraryService: addLibrary(library)
+  activate LibraryService
+
+  LibraryService -> DB: save(library)
+  activate DB
+
+  alt Save Successful
+    DB --> LibraryService: Library
+    deactivate DB
+
+    LibraryService -> LibraryController: Return Library
+    deactivate LibraryService
+
+    LibraryController -> User: 200 OK (Library)
+    deactivate LibraryController
+  else Save Failed
+    DB --> LibraryService: Error
+    deactivate DB
+
+    LibraryService -> LibraryController: Return Error
+    deactivate LibraryService
+
+    LibraryController -> User: 500 Internal Server Error
+    deactivate LibraryController
+  end
+else Library object is invalid
+  LibraryController -> User: 400 Bad Request
+  deactivate LibraryController
+end
+
+@enduml

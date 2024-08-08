@@ -1,0 +1,52 @@
+@startuml
+title Sequence Diagram for registerUser Method
+
+actor User
+participant UserController
+participant UserService
+participant UserRepository as Repo
+database Database as DB
+
+User -> UserController: POST /register
+activate UserController
+
+UserController -> UserService: registerUser(userDetails)
+activate UserService
+
+UserService -> Repo: Check if username exists
+activate Repo
+
+alt Username exists
+    Repo --> UserService: Username already in use
+    deactivate Repo
+
+    UserService -> UserController: Return Error (Username already in use)
+    deactivate UserService
+
+    UserController -> User: 400 Bad Request (Error: Username already in use)
+else
+    Repo --> UserService: Username not in use
+    deactivate Repo
+
+    UserService -> UserService: Validate Passwords
+    alt Passwords match
+        UserService -> UserService: Encode Password
+        UserService -> Repo: Save User
+        activate Repo
+
+        Repo --> UserService: User saved successfully
+        deactivate Repo
+
+        UserService -> UserController: Return saved User
+        deactivate UserService
+
+        UserController -> User: 201 Created (User Registered Successfully)
+    else
+        UserService -> UserController: Return Error (Passwords do not match)
+        deactivate UserService
+
+        UserController -> User: 400 Bad Request (Error: Passwords do not match)
+    end
+end
+
+@enduml

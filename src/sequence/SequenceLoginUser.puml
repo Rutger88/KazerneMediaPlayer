@@ -1,0 +1,45 @@
+@startuml
+title Sequence Diagram for loginUser Method
+
+actor User
+participant UserController
+participant UserService
+participant UserRepository as Repo
+database Database as DB
+
+User -> UserController: POST /login
+activate UserController
+
+UserController -> UserService: loginUser(username, password)
+activate UserService
+
+UserService -> Repo: Find User by username
+activate Repo
+
+alt User Found
+    Repo --> UserService: User Details
+    deactivate Repo
+
+    UserService -> UserService: Validate Password
+    alt Password Matches
+        UserService -> UserController: Return User
+        deactivate UserService
+
+        UserController -> User: 200 OK (User Details)
+    else Password Does Not Match
+        UserService -> UserController: Return Error (Password Mismatch)
+        deactivate UserService
+
+        UserController -> User: 401 Unauthorized (Error: Password Does Not Match)
+    end
+else User Not Found
+    Repo --> UserService: null
+    deactivate Repo
+
+    UserService -> UserController: Return Error (User Not Found)
+    deactivate UserService
+
+    UserController -> User: 404 Not Found (Error: User Not Found)
+end
+
+@enduml

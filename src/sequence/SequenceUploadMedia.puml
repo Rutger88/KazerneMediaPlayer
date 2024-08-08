@@ -1,0 +1,47 @@
+@startuml
+title Sequence Diagram for uploadMedia Method
+
+actor User
+participant MediaController
+participant MediaService
+database Database as DB
+
+User -> MediaController: POST /media/upload
+activate MediaController
+
+MediaController -> MediaService: uploadMedia(mediaFile, libraryId)
+activate MediaService
+
+MediaService -> MediaService: Transfer File
+alt Is File Transfer Successful?
+    MediaService -> DB: Save MediaFile Object
+    activate DB
+
+    alt Is Save Successful?
+        DB --> MediaService: Success
+        deactivate DB
+
+        MediaService -> MediaController: Confirm Upload Complete
+        deactivate MediaService
+
+        MediaController -> User: 200 OK (Upload Confirmed)
+        deactivate MediaController
+    else
+        DB --> MediaService: Failure
+        deactivate DB
+
+        MediaService -> MediaController: Database Save Failed
+        deactivate MediaService
+
+        MediaController -> User: 500 Internal Server Error (Error: Database Save Failed)
+        deactivate MediaController
+    end
+else
+    MediaService -> MediaController: File Transfer Failed
+    deactivate MediaService
+
+    MediaController -> User: 500 Internal Server Error (Error: File Transfer Failed)
+    deactivate MediaController
+end
+
+@enduml

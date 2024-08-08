@@ -1,0 +1,46 @@
+@startuml
+title Sequence Diagram for playNext Method
+
+actor User
+participant MediaController
+participant MediaService
+database Database as DB
+
+User -> MediaController: GET /media/next/{currentId}
+activate MediaController
+
+MediaController -> MediaService: playNext(currentId)
+activate MediaService
+
+alt Is Media ID Valid?
+    MediaService -> DB: Retrieve nextMediaFile by ID (currentId + 1)
+    activate DB
+
+    alt Does nextMediaFile Exist?
+        DB --> MediaService: nextMediaFile
+        deactivate DB
+
+        MediaService -> MediaController: MediaFile
+        deactivate MediaService
+
+        MediaController -> User: 200 OK (MediaFile)
+        deactivate MediaController
+    else
+        DB --> MediaService: null
+        deactivate DB
+
+        MediaService -> MediaController: Media File Not Found Exception
+        deactivate MediaService
+
+        MediaController -> User: 404 Not Found (Error: Media File Not Found)
+        deactivate MediaController
+    end
+else
+    MediaService -> MediaController: Invalid Media ID Exception
+    deactivate MediaService
+
+    MediaController -> User: 400 Bad Request (Error: Invalid Media ID)
+    deactivate MediaController
+end
+
+@enduml

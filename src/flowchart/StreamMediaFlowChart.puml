@@ -1,0 +1,18 @@
+@startuml
+title Flowchart for streamMedia Method
+
+start
+:Receive Request to Stream Media;
+:Retrieve Media File from MediaRepository;
+
+if (Media File Found?) then (yes)
+  :Generate Streaming URL;
+  :Return Streaming URL;
+  :Respond with 200 OK;
+else (no)
+  :Return Error: "Media Not Found";
+  :Respond with 404 Not Found;
+endif
+
+stop
+@enduml

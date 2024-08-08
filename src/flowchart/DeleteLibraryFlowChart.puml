@@ -1,0 +1,16 @@
+@startuml
+title Flowchart for deleteLibrary Method
+
+start
+:Receive libraryId;
+:Find Library by ID;
+if (Library found?) then (yes)
+  :Get Library;
+  :Delete Library by ID;
+  :Return Success message;
+else (no)
+  :Throw exception: "Library not found";
+endif
+
+stop
+@enduml

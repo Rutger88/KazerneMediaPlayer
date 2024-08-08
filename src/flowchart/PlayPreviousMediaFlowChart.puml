@@ -1,0 +1,19 @@
+@startuml
+title Flowchart for playPrevious Method
+
+start
+:Receive currentId;
+:Check if Media ID is Valid;
+if (Media ID Valid?) then (yes)
+  :Retrieve previousMediaFile by ID (currentId - 1);
+  if (previousMediaFile Exists?) then (yes)
+    :Return (play) previousMediaFile;
+  else (no)
+    :Return Error: "Media File Not Found";
+  endif
+else (no)
+  :Return Error: "Invalid Media ID";
+endif
+
+stop
+@enduml

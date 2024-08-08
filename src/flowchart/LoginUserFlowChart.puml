@@ -1,0 +1,19 @@
+@startuml
+title Flowchart for loginUser Method
+
+start
+:Receive username and password;
+:Find User by username;
+if (User Found?) then (yes)
+  :Check if Password Matches;
+  if (Password Matches?) then (yes)
+    :Return User;
+  else (no)
+    :Return Error: "Password does not match";
+  endif
+else (no)
+  :Return Error: "User not found";
+endif
+
+stop
+@enduml

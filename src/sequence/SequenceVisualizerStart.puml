@@ -1,0 +1,40 @@
+@startuml
+title Sequence Diagram for startVisualizer Method
+
+actor User
+participant VisualizerComponent
+participant VisualizerService
+
+User -> VisualizerComponent: Request to Start Visualizer
+activate VisualizerComponent
+
+VisualizerComponent -> VisualizerService: isVisualizerRunning()
+activate VisualizerService
+
+alt Visualizer Already Running
+    VisualizerService -> VisualizerComponent: true
+    deactivate VisualizerService
+    VisualizerComponent -> User: 400 Bad Request ("Visualizer Already Running")
+    deactivate VisualizerComponent
+else Visualizer Not Running
+    VisualizerService -> VisualizerComponent: false
+    deactivate VisualizerService
+
+    VisualizerComponent -> VisualizerService: initializeVisualizer()
+    activate VisualizerService
+    VisualizerService -> VisualizerService: startVisualizerProcess()
+
+    alt Visualizer Started Successfully
+        VisualizerService -> VisualizerComponent: "Visualizer Started Successfully"
+        deactivate VisualizerService
+        VisualizerComponent -> User: 200 OK ("Visualizer Started Successfully")
+        deactivate VisualizerComponent
+    else Visualizer Failed to Start
+        VisualizerService -> VisualizerComponent: "Failed to Start Visualizer"
+        deactivate VisualizerService
+        VisualizerComponent -> User: 500 Internal Server Error ("Failed to Start Visualizer")
+        deactivate VisualizerComponent
+    end
+end
+
+@enduml

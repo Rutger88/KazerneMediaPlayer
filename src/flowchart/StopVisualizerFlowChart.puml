@@ -1,0 +1,23 @@
+@startuml
+title Flowchart for stopVisualizer Method
+
+start
+:Receive Request to Stop Visualizer;
+:Check if Visualizer is Currently Running;
+
+if (Visualizer Running?) then (yes)
+  :Stop Visualizer Process;
+  if (Stop Successful?) then (yes)
+    :Return Success: "Visualizer Stopped Successfully";
+    :Respond with 200 OK;
+  else (no)
+    :Return Error: "Failed to Stop Visualizer";
+    :Respond with 500 Internal Server Error;
+  endif
+else (no)
+  :Return Error: "Visualizer Not Running";
+  :Respond with 400 Bad Request;
+endif
+
+stop
+@enduml

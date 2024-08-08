@@ -1,0 +1,15 @@
+@startuml
+title Flowchart for deleteUser Method
+
+start
+:Receive userId;
+:Check if User exists with userId;
+if (User Exists?) then (yes)
+  :Delete User by userId;
+  :Return Success Message;
+else (no)
+  :Throw Exception: "User with ID userId not found";
+endif
+
+stop
+@enduml

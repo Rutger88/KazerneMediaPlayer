@@ -1,0 +1,25 @@
+@startuml
+title Flowchart for registerUser Method
+
+start
+:Receive User Details;
+:Check if Username Already Exists;
+if (Username Exists?) then (yes)
+  :Return Error: "Username Already in Use";
+else (no)
+  :Validate Passwords;
+  if (Passwords Match?) then (yes)
+    :Encode Password;
+    :Save User to Database;
+    if (Save Successful?) then (yes)
+      :Return Success: "User Registered Successfully";
+    else (no)
+      :Return Error: "Database Save Failed";
+    endif
+  else (no)
+    :Return Error: "Passwords Do Not Match";
+  endif
+endif
+
+stop
+@enduml

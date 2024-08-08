@@ -1,0 +1,23 @@
+@startuml
+
+title Flowchart for uploadMedia Method
+start
+
+:Receive Media File and Library ID;
+:Save Media File;
+:Transfer File;
+if (Is File Transfer Successful?) then (yes)
+  :Create MediaFile Object;
+  :Set Media File Properties;
+  :Save MediaFile Object to Database;
+  if (Is Save Successful?) then (yes)
+    :Confirm Upload Complete;
+  else (no)
+    :Show Error: "Database Save Failed";
+  endif
+else (no)
+  :Show Error: "File Transfer Failed";
+endif
+
+stop
+@enduml

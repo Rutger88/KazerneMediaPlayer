@@ -1,0 +1,35 @@
+@startuml
+title Sequence Diagram for deleteLibrary Method
+
+actor User
+participant LibraryController
+participant LibraryService
+database LibraryRepository as DB
+
+User -> LibraryController: DELETE /libraries/{libraryId}
+activate LibraryController
+
+LibraryController -> LibraryService: deleteLibrary(libraryId)
+activate LibraryService
+
+LibraryService -> DB: findById(libraryId)
+activate DB
+
+alt Library found
+    DB --> LibraryService: Library
+    LibraryService -> DB: deleteById(libraryId)
+    DB --> LibraryService: Deletion Confirmed
+    LibraryService -> LibraryController: Return Library
+    deactivate LibraryService
+    LibraryController -> User: 200 OK (Library)
+else Library not found
+    DB --> LibraryService: null
+    LibraryService -> LibraryController: Throw Exception
+    deactivate LibraryService
+    LibraryController -> User: 404 Not Found (Error: Library not found)
+end
+
+deactivate LibraryController
+deactivate DB
+
+@enduml

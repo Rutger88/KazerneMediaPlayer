@@ -1,0 +1,33 @@
+@startuml
+title Sequence Diagram for getSharedLibraries Method
+
+actor User
+participant LibraryController
+participant LibraryService
+database LibraryRepository as DB
+
+User -> LibraryController: GET /libraries/shared/{ownerId}
+activate LibraryController
+
+LibraryController -> LibraryService: getSharedLibraries(ownerId)
+activate LibraryService
+
+LibraryService -> DB: findAllByOwnerId(ownerId)
+activate DB
+
+alt Libraries Found
+    DB --> LibraryService: List of Libraries
+    LibraryService -> LibraryController: List of Libraries
+    deactivate LibraryService
+    LibraryController -> User: 200 OK (List of Libraries)
+else No Libraries Found
+    DB --> LibraryService: Empty List
+    LibraryService -> LibraryController: Empty List
+    deactivate LibraryService
+    LibraryController -> User: 204 No Content
+end
+
+deactivate LibraryController
+deactivate DB
+
+@enduml

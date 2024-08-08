@@ -1,0 +1,21 @@
+@startuml
+
+title Flowchart for playMedia Method
+start
+
+:Receive Media ID;
+:Check Media ID Validity;
+if (Is Media ID Valid?) then (yes)
+  :Retrieve Media File;
+  if (Does Media File Exist?) then (yes)
+    :Set Media as Currently Playing;
+    :Play Media File;
+  else (no)
+    :Show Error: "Media File Not Found";
+  endif
+else (no)
+  :Show Error: "Invalid Media ID";
+endif
+
+stop
+@enduml

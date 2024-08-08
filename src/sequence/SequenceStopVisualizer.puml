@@ -1,0 +1,39 @@
+@startuml
+title Sequence Diagram for stopVisualizer Method
+
+actor User
+participant VisualizerComponent
+participant VisualizerService
+
+User -> VisualizerComponent: Request to Stop Visualizer
+activate VisualizerComponent
+
+VisualizerComponent -> VisualizerService: isVisualizerRunning()
+activate VisualizerService
+
+alt Visualizer Not Running
+    VisualizerService -> VisualizerComponent: false
+    deactivate VisualizerService
+    VisualizerComponent -> User: 400 Bad Request ("Visualizer Not Running")
+    deactivate VisualizerComponent
+else Visualizer Running
+    VisualizerService -> VisualizerComponent: true
+    deactivate VisualizerService
+
+    VisualizerComponent -> VisualizerService: stopVisualizerProcess()
+    activate VisualizerService
+
+    alt Visualizer Stopped Successfully
+        VisualizerService -> VisualizerComponent: "Visualizer Stopped Successfully"
+        deactivate VisualizerService
+        VisualizerComponent -> User: 200 OK ("Visualizer Stopped Successfully")
+        deactivate VisualizerComponent
+    else Failed to Stop Visualizer
+        VisualizerService -> VisualizerComponent: "Failed to Stop Visualizer"
+        deactivate VisualizerService
+        VisualizerComponent -> User: 500 Internal Server Error ("Failed to Stop Visualizer")
+        deactivate VisualizerComponent
+    end
+end
+
+@enduml
