@@ -8,10 +8,13 @@ public class Library {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long ownerId;
 
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
     @OneToMany(mappedBy = "library")
     private Set<MediaFile> mediaFiles;
 
@@ -23,11 +26,11 @@ public class Library {
     }
 
     public Long getId() {
-        return id;
+        return ownerId;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.ownerId = id;
     }
 
     public String getName() {

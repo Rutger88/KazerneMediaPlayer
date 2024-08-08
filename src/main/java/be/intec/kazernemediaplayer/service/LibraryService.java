@@ -21,7 +21,9 @@ public class LibraryService {
     public Library addLibrary(Library library) {
         return libraryRepository.save(library);
     }
-
+    public Library saveLibrary(Library library) {
+        return libraryRepository.save(library);
+    }
     public Library deleteLibrary(Long libraryId) {
         Optional<Library> libraryOptional = libraryRepository.findById(libraryId);
         if (libraryOptional.isPresent()) {

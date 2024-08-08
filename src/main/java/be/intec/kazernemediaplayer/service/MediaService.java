@@ -54,9 +54,7 @@ public class MediaService {
 
     public MediaFile playNext(Long currentId) {
         Optional<MediaFile> nextMediaFile = mediaRepository.findById(currentId + 1);
-        if (nextMediaFile.isPresent()) {
-            currentlyPlaying = nextMediaFile.get();
-        }
+        nextMediaFile.ifPresent(mediaFile -> currentlyPlaying = mediaFile);
         return currentlyPlaying;
     }
 

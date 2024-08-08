@@ -10,6 +10,4 @@ public interface LibraryRepository extends JpaRepository<Library, Long> {
     List<Library> findAllByOwnerId(Long ownerId);
     Optional<Library> findById(Long libraryId);
 
-    List<Library> saveLibrary (Library library);
-
 }

@@ -4,6 +4,8 @@ import be.intec.kazernemediaplayer.model.MediaFile;
 import be.intec.kazernemediaplayer.service.MediaNotFoundException;
 import be.intec.kazernemediaplayer.service.MediaService;
 import be.intec.kazernemediaplayer.service.StreamingService;
+//import be.intec.kazernemediaplayer.service.StreamingServiceImpl;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,11 +22,14 @@ import java.util.List;
 public class MediaController {
 
     private static final Logger logger = (Logger) LoggerFactory.getLogger(MediaController.class);
-    @Autowired
-    public MediaService mediaService;
+    private final MediaService mediaService;
+    private final StreamingService streamingService;
 
     @Autowired
-    private StreamingService streamingService;
+    public MediaController(MediaService mediaService, StreamingService streamingService) {
+        this.mediaService = mediaService;
+        this.streamingService = streamingService;
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<MediaFile> uploadMedia(@RequestParam("file") MultipartFile file, @RequestParam("libraryId") Long libraryId) throws IOException {
