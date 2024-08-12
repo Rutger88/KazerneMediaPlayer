@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface LibraryRepository extends JpaRepository<Library, Long> {
-    List<Library> findAllByOwnerId(Long ownerId);
-    Optional<Library> findById(Long libraryId);
+    List<Library> findAllById(Long id); // If you meant to find by library ID
 
+    // Or
+    List<Library> findAllByUserId(Long userId); // If you meant to find by user ID
 }

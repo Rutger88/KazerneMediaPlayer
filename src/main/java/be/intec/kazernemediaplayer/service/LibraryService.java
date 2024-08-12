@@ -14,8 +14,8 @@ public class LibraryService {
     @Autowired
     private LibraryRepository libraryRepository;
 
-    public List<Library> getSharedLibraries(Long ownerId) {
-        return libraryRepository.findAllByOwnerId(ownerId);
+    public List<Library> getSharedLibraries(Long id) {
+        return libraryRepository.findAllById(id);
     }
 
     public Library addLibrary(Library library) {

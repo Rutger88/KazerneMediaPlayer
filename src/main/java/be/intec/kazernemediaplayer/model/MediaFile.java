@@ -11,8 +11,11 @@ public class MediaFile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 255)
     private String name;
+    @Column(length = 100)
     private String type;
+    @Column(length = 500)
     private String url;
 
     @ManyToOne

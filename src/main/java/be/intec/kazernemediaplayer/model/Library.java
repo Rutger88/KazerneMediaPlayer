@@ -8,7 +8,7 @@ public class Library {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long ownerId;
+    private Long id;
 
     private String name;
 
@@ -26,11 +26,11 @@ public class Library {
     }
 
     public Long getId() {
-        return ownerId;
+        return id;
     }
 
     public void setId(Long id) {
-        this.ownerId = id;
+        this.id = id;
     }
 
     public String getName() {
@@ -41,6 +41,9 @@ public class Library {
         this.name = name;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
     public Set<MediaFile> getMediaFiles() {
         return mediaFiles;
     }

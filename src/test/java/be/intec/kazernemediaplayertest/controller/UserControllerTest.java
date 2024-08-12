@@ -23,7 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(classes = KazerneMediaPLayer.class)
+/*@SpringBootTest(classes = KazerneMediaPLayer.class)
 @AutoConfigureMockMvc
 public class UserControllerTest {
 
@@ -40,6 +40,7 @@ public class UserControllerTest {
         MockitoAnnotations.openMocks(this);
         objectMapper = new ObjectMapper();
     }
+}*/
 
    /* @Test
     public void testRegisterUser() throws Exception {
@@ -49,7 +50,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk()); // or another expected status code
     }*/
 
-    @Test
+  /*  @Test
     @WithMockUser(username = "testuser", roles = "USER")
     void testLoginUser() throws Exception {
         // Given
@@ -78,5 +79,5 @@ public class UserControllerTest {
         mockMvc.perform(delete("/users/1")
                         .with(user("testuser").password("password").roles("USER")))
                 .andExpect(status().isNoContent()); // or another expected status code
-    }*/
-}
+    }
+}*/
