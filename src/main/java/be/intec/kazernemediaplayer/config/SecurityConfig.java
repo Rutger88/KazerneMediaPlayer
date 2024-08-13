@@ -21,11 +21,11 @@ public class SecurityConfig {
     }
 
 
-    @Bean
+   /* @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())  // Disable CSRF protection
-                .requiresChannel(channel -> channel.anyRequest().requiresSecure())  // Enforce HTTPS
+               // .requiresChannel(channel -> channel.anyRequest().requiresSecure())  // Enforce HTTPS
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/media/upload", "/media/play/**").permitAll()
                         .anyRequest().authenticated()
@@ -33,5 +33,16 @@ public class SecurityConfig {
                 .httpBasic(withDefaults());  // Enable HTTP Basic authentication with default settings
 
         return http.build();
-    }
+    }*/
+   @Bean
+   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+       http
+               .csrf(csrf -> csrf.disable())
+               .authorizeHttpRequests(authz -> authz
+                       .requestMatchers("/**").permitAll()  // Permit all requests
+               )
+               .httpBasic(withDefaults());
+
+       return http.build();
+   }
 }
