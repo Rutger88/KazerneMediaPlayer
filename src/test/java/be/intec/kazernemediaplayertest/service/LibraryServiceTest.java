@@ -1,5 +1,6 @@
 package be.intec.kazernemediaplayertest.service;
 
+import be.intec.kazernemediaplayer.KazerneMediaPLayer;
 import be.intec.kazernemediaplayer.model.Library;
 import be.intec.kazernemediaplayer.repository.LibraryRepository;
 import be.intec.kazernemediaplayer.service.LibraryService;
@@ -15,8 +16,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
-/*@SpringBootTest
+@SpringBootTest(classes = KazerneMediaPLayer.class)
 public class LibraryServiceTest {
 
     @Mock
@@ -28,23 +30,23 @@ public class LibraryServiceTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-    }*/
+    }
 
-   /* @Test
+    @Test
     public void testGetSharedLibraries() {
         Long ownerId = 1L;
         Library library1 = new Library();
         Library library2 = new Library();
-        when(libraryRepository.findAllByUserId(userId)).thenReturn(Arrays.asList(library1, library2));
+        when(libraryRepository.findAllById(ownerId)).thenReturn(Arrays.asList(library1, library2));
 
         var libraries = libraryService.getSharedLibraries(ownerId);
 
         assertNotNull(libraries);
         assertEquals(2, libraries.size());
-        verify(libraryRepository, times(1)).findAllByUserId(userId);
-    }*/
+        verify(libraryRepository, times(1)).findAllById(ownerId);
+    }
 
- /*   @Test
+    @Test
     public void testAddLibrary() {
         Library library = new Library();
         when(libraryRepository.save(library)).thenReturn(library);
@@ -94,4 +96,4 @@ public class LibraryServiceTest {
         verify(libraryRepository, times(1)).findById(libraryId);
         verify(libraryRepository, never()).deleteById(libraryId);
     }
-}*/
+}
