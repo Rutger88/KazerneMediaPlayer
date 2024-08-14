@@ -1,5 +1,6 @@
 package be.intec.kazernemediaplayer.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.Objects;
@@ -19,6 +20,8 @@ public class MediaFile {
     private String url;
 
     @ManyToOne
+    @JoinColumn(name = "library_id")
+    @JsonBackReference
     private Library library;
 
     public MediaFile() {

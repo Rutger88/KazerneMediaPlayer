@@ -1,6 +1,9 @@
 package be.intec.kazernemediaplayer.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -16,7 +19,8 @@ public class Library {
     @JoinColumn(name = "user_id")
     private User user;
     @OneToMany(mappedBy = "library")
-    private Set<MediaFile> mediaFiles;
+    @JsonManagedReference
+    private List<MediaFile> mediaFiles;
 
     public Library() {
     }
@@ -44,11 +48,11 @@ public class Library {
     public void setUser(User user) {
         this.user = user;
     }
-    public Set<MediaFile> getMediaFiles() {
+    public List<MediaFile> getMediaFiles() {
         return mediaFiles;
     }
 
-    public void setMediaFiles(Set<MediaFile> mediaFiles) {
+    public void setMediaFiles(List<MediaFile> mediaFiles) {
         this.mediaFiles = mediaFiles;
     }
 }
