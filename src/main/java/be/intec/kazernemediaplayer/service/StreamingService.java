@@ -15,11 +15,15 @@ import java.util.Optional;
 @Service
 public class StreamingService {
 
-    @Autowired
-    private MediaRepository mediaRepository;
+    private final MediaRepository mediaRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(StreamingService.class);
     private static final String BASE_STREAMING_URL = "http://streaming.server/media/";
+
+    @Autowired
+    public StreamingService(MediaRepository mediaRepository) {
+        this.mediaRepository = mediaRepository;
+    }
 
     public String streamMedia(Long mediaId) {
         Optional<MediaFile> mediaFileOptional = mediaRepository.findById(mediaId);
