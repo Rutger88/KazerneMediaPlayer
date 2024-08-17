@@ -1,5 +1,6 @@
 package be.intec.kazernemediaplayer.controller;
 
+import be.intec.kazernemediaplayer.service.MediaNotFoundException;
 import be.intec.kazernemediaplayer.service.StreamingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,5 +15,9 @@ public class StreamingController {
     @GetMapping("/{mediaId}")
     public ResponseEntity<String> streamMedia(@PathVariable Long mediaId) {
         return ResponseEntity.ok(streamingService.streamMedia(mediaId));
+    }
+    @ExceptionHandler(MediaNotFoundException.class)
+    public ResponseEntity<String> handleMediaNotFoundException(MediaNotFoundException ex) {
+        return ResponseEntity.status(404).body(ex.getMessage());
     }
 }
