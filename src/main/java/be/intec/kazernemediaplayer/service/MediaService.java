@@ -79,9 +79,7 @@ public class MediaService {
 
     public MediaFile playPrevious(Long currentId) {
         Optional<MediaFile> previousMediaFile = mediaRepository.findById(currentId - 1);
-        if (previousMediaFile.isPresent()) {
-            currentlyPlaying = previousMediaFile.get();
-        }
+        previousMediaFile.ifPresent(mediaFile -> currentlyPlaying = mediaFile);
         return currentlyPlaying;
     }
 

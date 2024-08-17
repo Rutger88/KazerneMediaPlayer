@@ -59,7 +59,7 @@ class MediaServiceTest {
         // Mocking the MediaRepository to return the saved MediaFile
         MediaFile savedMediaFile = new MediaFile();
         savedMediaFile.setName(fileName);
-        savedMediaFile.setUrl(filePath + fileName);
+        savedMediaFile.setUrl(filePath + "1724152608124_" + fileName); // Example dynamic file path
         savedMediaFile.setLibrary(library);
         savedMediaFile.setId(1L);
 
@@ -70,15 +70,26 @@ class MediaServiceTest {
 
         // Then
         assertNotNull(result);
-        assertEquals(fileName, result.getName());
-        assertTrue(result.getUrl().startsWith(filePath));
+        assertTrue(result.getUrl().startsWith(filePath)); // Check the start of the path
+        assertTrue(result.getUrl().endsWith(fileName)); // Check the end of the path
         assertEquals(libraryId, result.getLibrary().getId());
+
+        // Capturing the MediaFile object passed to mediaRepository.save()
+        ArgumentCaptor<MediaFile> mediaFileCaptor = ArgumentCaptor.forClass(MediaFile.class);
+        verify(mediaRepository).save(mediaFileCaptor.capture());
+        MediaFile capturedMediaFile = mediaFileCaptor.getValue();
+
+        // Additional assertions on the captured MediaFile
+        assertTrue(capturedMediaFile.getUrl().startsWith(filePath));
+        assertTrue(capturedMediaFile.getUrl().endsWith(fileName));
+        assertEquals(library, capturedMediaFile.getLibrary());
 
         // Verify interactions
         verify(multipartFile).transferTo(any(File.class));
         verify(libraryRepository).findById(libraryId);  // Verify that findById was called
-        verify(mediaRepository).save(any(MediaFile.class));
     }
+
+
 
     @Test
     void playMedia() {
