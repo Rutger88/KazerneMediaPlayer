@@ -73,13 +73,21 @@ public class MediaService {
 
     public MediaFile playNext(Long currentId) {
         Optional<MediaFile> nextMediaFile = mediaRepository.findById(currentId + 1);
-        nextMediaFile.ifPresent(mediaFile -> currentlyPlaying = mediaFile);
+        if (nextMediaFile.isPresent()) {
+            currentlyPlaying = nextMediaFile.get();
+        } else {
+            throw new MediaNotFoundException("Next media file not found");
+        }
         return currentlyPlaying;
     }
 
     public MediaFile playPrevious(Long currentId) {
         Optional<MediaFile> previousMediaFile = mediaRepository.findById(currentId - 1);
-        previousMediaFile.ifPresent(mediaFile -> currentlyPlaying = mediaFile);
+        if (previousMediaFile.isPresent()) {
+            currentlyPlaying = previousMediaFile.get();
+        } else {
+            throw new MediaNotFoundException("Previous media file not found");
+        }
         return currentlyPlaying;
     }
 
