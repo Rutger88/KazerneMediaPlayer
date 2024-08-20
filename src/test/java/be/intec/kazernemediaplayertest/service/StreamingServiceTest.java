@@ -39,7 +39,7 @@ class StreamingServiceTest {
 
         // Then
         assertNotNull(result);
-        assertTrue(result.contains("http://localhost:8080/media//1"));
+        assertTrue(result.contains("http://localhost:8080/media/1"));
         verify(mediaRepository, times(1)).findById(1L);
     }
 
