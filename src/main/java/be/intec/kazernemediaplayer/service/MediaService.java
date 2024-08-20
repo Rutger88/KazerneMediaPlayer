@@ -1,6 +1,5 @@
 package be.intec.kazernemediaplayer.service;
 
-
 import be.intec.kazernemediaplayer.model.Library;
 import be.intec.kazernemediaplayer.model.MediaFile;
 import be.intec.kazernemediaplayer.repository.LibraryRepository;
@@ -11,12 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MediaService {
@@ -26,15 +25,15 @@ public class MediaService {
     @Value("${media.upload-dir}")
     private String directoryPath;
 
-    @Autowired
-    private MediaRepository mediaRepository;
-
-    @Autowired
-    private LibraryRepository libraryRepository;
-    private static final String MEDIA_DIR = "D:\\KazerneMediaPlayer Songs 2024";
-
-
+    private final MediaRepository mediaRepository;
+    private final LibraryRepository libraryRepository;
     private MediaFile currentlyPlaying;
+
+    @Autowired
+    public MediaService(MediaRepository mediaRepository, LibraryRepository libraryRepository) {
+        this.mediaRepository = mediaRepository;
+        this.libraryRepository = libraryRepository;
+    }
 
     public MediaFile uploadMedia(MultipartFile multipartFile, Long libraryId) throws IOException {
         if (multipartFile.isEmpty()) {
@@ -45,9 +44,9 @@ public class MediaService {
         Files.createDirectories(Paths.get(directoryPath));
 
         // Sanitize file name and handle potential filename collisions
-        String originalFileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString(); // Ensure it's a safe file name
+        String originalFileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
         String uniqueFileName = System.currentTimeMillis() + "_" + originalFileName;
-        String filePath = directoryPath + uniqueFileName;
+        String filePath = Paths.get(directoryPath, uniqueFileName).toString();
 
         // Save the file to the specified path
         File file = new File(filePath);
@@ -61,7 +60,7 @@ public class MediaService {
         MediaFile mediaFile = new MediaFile();
         mediaFile.setName(originalFileName);
         mediaFile.setUrl(filePath);
-        mediaFile.setType(detectMediaType(originalFileName)); // Set the correct media type
+        mediaFile.setType(detectMediaType(originalFileName));
         mediaFile.setLibrary(library);
 
         // Save the MediaFile entity to the database
@@ -79,7 +78,6 @@ public class MediaService {
                 throw new IOException("Failed to delete file: " + mediaFile.getUrl());
             }
         } else {
-            // Log the missing file issue instead of throwing an exception
             logger.warn("File not found in filesystem: {}", mediaFile.getUrl());
         }
 
@@ -88,19 +86,19 @@ public class MediaService {
     }
 
     private String detectMediaType(String fileName) {
-        if (fileName.endsWith(".mp3")) {
-            return "audio/mpeg";
-        } else if (fileName.endsWith(".mp4")) {
-            return "video/mp4";
+        try {
+            return Files.probeContentType(Paths.get(fileName));
+        } catch (IOException e) {
+            logger.error("Unable to detect media type for file: {}", fileName, e);
+            return "unknown";
         }
-        // Add more conditions as needed
-        return "unknown";
     }
 
     public MediaFile playMedia(Long mediaId) {
         currentlyPlaying = mediaRepository.findById(mediaId).orElse(null);
         return currentlyPlaying;
     }
+
     public MediaFile getCurrentlyPlaying() {
         return currentlyPlaying;
     }
@@ -110,7 +108,7 @@ public class MediaService {
     }
 
     public MediaFile playNext(Long currentId) {
-        List<MediaFile> mediaFiles = mediaRepository.findAll(); // Assuming this is sorted
+        List<MediaFile> mediaFiles = mediaRepository.findAll();
         int currentIndex = findCurrentIndex(mediaFiles, currentId);
         if (currentIndex >= 0 && currentIndex < mediaFiles.size() - 1) {
             currentlyPlaying = mediaFiles.get(currentIndex + 1);
@@ -121,7 +119,7 @@ public class MediaService {
     }
 
     public MediaFile playPrevious(Long currentId) {
-        List<MediaFile> mediaFiles = mediaRepository.findAll(); // Assuming this is sorted
+        List<MediaFile> mediaFiles = mediaRepository.findAll();
         int currentIndex = findCurrentIndex(mediaFiles, currentId);
         if (currentIndex > 0) {
             currentlyPlaying = mediaFiles.get(currentIndex - 1);
@@ -130,25 +128,6 @@ public class MediaService {
         }
         return currentlyPlaying;
     }
-   /* public MediaFile playNext(Long currentId) {
-        Optional<MediaFile> nextMediaFile = mediaRepository.findById(currentId + 1);
-        if (nextMediaFile.isPresent()) {
-            currentlyPlaying = nextMediaFile.get();
-        } else {
-            throw new MediaNotFoundException("Next media file not found");
-        }
-        return currentlyPlaying;
-    }*/
-
-   /* public MediaFile playPrevious(Long currentId) {
-        Optional<MediaFile> previousMediaFile = mediaRepository.findById(currentId - 1);
-        if (previousMediaFile.isPresent()) {
-            currentlyPlaying = previousMediaFile.get();
-        } else {
-            throw new MediaNotFoundException("Previous media file not found");
-        }
-        return currentlyPlaying;
-    }*/
 
     private int findCurrentIndex(List<MediaFile> mediaFiles, Long currentId) {
         for (int i = 0; i < mediaFiles.size(); i++) {
@@ -156,15 +135,10 @@ public class MediaService {
                 return i;
             }
         }
-        return -1; // Not found
-    }
-        @Autowired
-        public MediaService(MediaRepository mediaRepository) {
-            this.mediaRepository = mediaRepository;
-        }
-
-        public List<MediaFile> findAll() {
-            return mediaRepository.findAll();
-        }
+        return -1;
     }
 
+    public List<MediaFile> findAll() {
+        return mediaRepository.findAll();
+    }
+}

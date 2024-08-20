@@ -10,6 +10,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/media/**")
-                .addResourceLocations("D:\\KazerneMediaPlayer Songs 2024/");
+                .addResourceLocations("file:///D:/KazerneMediaPlayer%20Songs%202024/");
     }
 }
