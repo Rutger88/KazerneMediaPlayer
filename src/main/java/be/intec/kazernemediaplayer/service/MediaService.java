@@ -72,9 +72,10 @@ public class MediaService {
     }
 
     public MediaFile playNext(Long currentId) {
-        Optional<MediaFile> nextMediaFile = mediaRepository.findById(currentId + 1);
-        if (nextMediaFile.isPresent()) {
-            currentlyPlaying = nextMediaFile.get();
+        List<MediaFile> mediaFiles = mediaRepository.findAll(); // Assuming this is sorted
+        int currentIndex = findCurrentIndex(mediaFiles, currentId);
+        if (currentIndex >= 0 && currentIndex < mediaFiles.size() - 1) {
+            currentlyPlaying = mediaFiles.get(currentIndex + 1);
         } else {
             throw new MediaNotFoundException("Next media file not found");
         }
@@ -82,6 +83,26 @@ public class MediaService {
     }
 
     public MediaFile playPrevious(Long currentId) {
+        List<MediaFile> mediaFiles = mediaRepository.findAll(); // Assuming this is sorted
+        int currentIndex = findCurrentIndex(mediaFiles, currentId);
+        if (currentIndex > 0) {
+            currentlyPlaying = mediaFiles.get(currentIndex - 1);
+        } else {
+            throw new MediaNotFoundException("Previous media file not found");
+        }
+        return currentlyPlaying;
+    }
+   /* public MediaFile playNext(Long currentId) {
+        Optional<MediaFile> nextMediaFile = mediaRepository.findById(currentId + 1);
+        if (nextMediaFile.isPresent()) {
+            currentlyPlaying = nextMediaFile.get();
+        } else {
+            throw new MediaNotFoundException("Next media file not found");
+        }
+        return currentlyPlaying;
+    }*/
+
+   /* public MediaFile playPrevious(Long currentId) {
         Optional<MediaFile> previousMediaFile = mediaRepository.findById(currentId - 1);
         if (previousMediaFile.isPresent()) {
             currentlyPlaying = previousMediaFile.get();
@@ -89,7 +110,7 @@ public class MediaService {
             throw new MediaNotFoundException("Previous media file not found");
         }
         return currentlyPlaying;
-    }
+    }*/
 
     private int findCurrentIndex(List<MediaFile> mediaFiles, Long currentId) {
         for (int i = 0; i < mediaFiles.size(); i++) {
