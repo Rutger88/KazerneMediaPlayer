@@ -34,7 +34,7 @@ public class SecurityConfig {
 
         return http.build();
     }*/
-   @Bean
+  /* @Bean
    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
        http
                .csrf(csrf -> csrf.disable())
@@ -42,6 +42,18 @@ public class SecurityConfig {
                        .requestMatchers("/**").permitAll()  // Permit all requests
                )
                .httpBasic(withDefaults());
+
+       return http.build();
+   }*/
+   @Bean
+   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+       http
+               .csrf(csrf -> csrf.disable())
+               .authorizeHttpRequests(authz -> authz
+                       .requestMatchers("/media/**").permitAll()  // Permit public access to media files
+                       .anyRequest().authenticated()  // Require authentication for all other requests
+               )
+               .httpBasic(withDefaults());  // Enables HTTP Basic Authentication
 
        return http.build();
    }
