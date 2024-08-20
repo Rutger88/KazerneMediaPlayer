@@ -9,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +20,8 @@ import java.util.Optional;
 
 @Service
 public class MediaService {
+
+    private static final Logger logger = LoggerFactory.getLogger(MediaService.class);
 
     @Value("${media.upload-dir}")
     private String directoryPath;
@@ -63,6 +66,25 @@ public class MediaService {
 
         // Save the MediaFile entity to the database
         return mediaRepository.save(mediaFile);
+    }
+
+    public void deleteMedia(Long mediaId) throws IOException {
+        MediaFile mediaFile = mediaRepository.findById(mediaId)
+                .orElseThrow(() -> new IllegalArgumentException("Media file not found with ID: " + mediaId));
+
+        // Delete the file from the filesystem
+        File file = new File(mediaFile.getUrl());
+        if (file.exists()) {
+            if (!file.delete()) {
+                throw new IOException("Failed to delete file: " + mediaFile.getUrl());
+            }
+        } else {
+            // Log the missing file issue instead of throwing an exception
+            logger.warn("File not found in filesystem: {}", mediaFile.getUrl());
+        }
+
+        // Always delete the media file record from the database
+        mediaRepository.deleteById(mediaId);
     }
 
     private String detectMediaType(String fileName) {

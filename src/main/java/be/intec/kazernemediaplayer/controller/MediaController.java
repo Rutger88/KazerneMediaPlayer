@@ -7,6 +7,7 @@ import be.intec.kazernemediaplayer.service.StreamingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -93,4 +94,16 @@ public class MediaController {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
-}
+        @DeleteMapping("/delete/{mediaId}")
+        public ResponseEntity<Void> deleteMedia(@PathVariable Long mediaId) {
+            try {
+                mediaService.deleteMedia(mediaId);
+                return ResponseEntity.ok().build();
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        }
+    }
+

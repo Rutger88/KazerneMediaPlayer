@@ -98,7 +98,72 @@ class MediaServiceTest {
         verify(libraryRepository).findById(libraryId);  // Verify that findById was called
     }
 
+    @Test
+    void deleteMedia() throws IOException {
+        // Given
+        Long mediaId = 1L;
+        String filePath = "D:/KazerneMediaPlayer Songs 2024/1724152608124_file.mp3";
+        MediaFile mediaFile = new MediaFile();
+        mediaFile.setId(mediaId);
+        mediaFile.setUrl(filePath);
 
+        // Mocking the MediaRepository to return the media file
+        when(mediaRepository.findById(mediaId)).thenReturn(Optional.of(mediaFile));
+
+        // Mocking the file exists scenario
+        File file = mock(File.class);
+        when(file.exists()).thenReturn(true);
+        when(file.delete()).thenReturn(true);
+
+        // When
+        mediaService.deleteMedia(mediaId);
+
+        // Then
+        verify(mediaRepository).deleteById(mediaId);
+    }
+
+    @Test
+    void deleteMedia_FileNotFound() throws IOException {
+        // Given
+        Long mediaId = 1L;
+        String filePath = "D:/KazerneMediaPlayer Songs 2024/1724152608124_file.mp3";
+        MediaFile mediaFile = new MediaFile();
+        mediaFile.setId(mediaId);
+        mediaFile.setUrl(filePath);
+
+        // Mocking the MediaRepository to return the media file
+        when(mediaRepository.findById(mediaId)).thenReturn(Optional.of(mediaFile));
+
+        // Mocking the file not found scenario
+        File file = mock(File.class);
+        when(file.exists()).thenReturn(false);
+
+        // When
+        mediaService.deleteMedia(mediaId);
+
+        // Then
+        verify(mediaRepository).deleteById(mediaId);
+        // Log verification can also be added to check if the warning was logged, but it's optional.
+    }
+
+    @Test
+    void deleteMedia_MediaNotFound() {
+        // Given
+        Long mediaId = 1L;
+
+        // Mocking the MediaRepository to return an empty optional (media not found)
+        when(mediaRepository.findById(mediaId)).thenReturn(Optional.empty());
+
+        // Expect an IllegalArgumentException due to the missing media file
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            mediaService.deleteMedia(mediaId);
+        });
+
+        assertEquals("Media file not found with ID: " + mediaId, exception.getMessage());
+
+        // Verify that deleteById was never called since the media was not found
+        verify(mediaRepository, never()).deleteById(mediaId);
+    }
 
     @Test
     void playMedia() {
