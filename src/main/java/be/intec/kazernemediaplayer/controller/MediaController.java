@@ -30,6 +30,11 @@ public class MediaController {
         this.streamingService = streamingService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<MediaFile>> getAllMedia() {
+        List<MediaFile> mediaFiles = mediaService.findAll();
+        return ResponseEntity.ok(mediaFiles);
+    }
     @PostMapping("/upload")
     public ResponseEntity<MediaFile> uploadMedia(@RequestParam("file") MultipartFile file, @RequestParam("libraryId") Long libraryId) throws IOException {
         logger.info("Received file upload request for library ID: {}", libraryId);
