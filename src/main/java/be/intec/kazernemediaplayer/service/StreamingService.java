@@ -18,7 +18,7 @@ public class StreamingService {
     private final MediaRepository mediaRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(StreamingService.class);
-    private static final String BASE_STREAMING_URL = "http://streaming.server/media/";
+    private static final String BASE_STREAMING_URL = "http://localhost:8080/media/";
 
     @Autowired
     public StreamingService(MediaRepository mediaRepository) {
