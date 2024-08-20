@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.mockito.ArgumentCaptor;
 import static org.mockito.Mockito.*;
@@ -20,32 +21,40 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
 class MediaServiceTest {
 
     @Mock
     private LibraryRepository libraryRepository;
-    @InjectMocks
-    private MediaService mediaService;
 
     @Mock
     private MediaRepository mediaRepository;
 
+    @InjectMocks
+    private MediaService mediaService;
+
     @Mock
     private MultipartFile multipartFile;
+
+    private final String directoryPath = "D:/KazerneMediaPlayer Songs 2024/";
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // Inject the directoryPath value into the MediaService instance
+        ReflectionTestUtils.setField(mediaService, "directoryPath", directoryPath);
+
+        // Manually inject the mock repositories into the mediaService
+        ReflectionTestUtils.setField(mediaService, "libraryRepository", libraryRepository);
+        ReflectionTestUtils.setField(mediaService, "mediaRepository", mediaRepository);
     }
-
-
 
     @Test
     void uploadMedia() throws IOException {
         // Given
         Long libraryId = 1L;
         String fileName = "Test.wav";
-        String filePath = "D:/Rendered projects/2024/";
         Library library = new Library();
         library.setId(libraryId);
 
@@ -59,7 +68,7 @@ class MediaServiceTest {
         // Mocking the MediaRepository to return the saved MediaFile
         MediaFile savedMediaFile = new MediaFile();
         savedMediaFile.setName(fileName);
-        savedMediaFile.setUrl(filePath + "1724152608124_" + fileName); // Example dynamic file path
+        savedMediaFile.setUrl(directoryPath + "1724152608124_" + fileName); // Example dynamic file path
         savedMediaFile.setLibrary(library);
         savedMediaFile.setId(1L);
 
@@ -70,7 +79,7 @@ class MediaServiceTest {
 
         // Then
         assertNotNull(result);
-        assertTrue(result.getUrl().startsWith(filePath)); // Check the start of the path
+        assertTrue(result.getUrl().startsWith(directoryPath)); // Check the start of the path
         assertTrue(result.getUrl().endsWith(fileName)); // Check the end of the path
         assertEquals(libraryId, result.getLibrary().getId());
 
@@ -80,7 +89,7 @@ class MediaServiceTest {
         MediaFile capturedMediaFile = mediaFileCaptor.getValue();
 
         // Additional assertions on the captured MediaFile
-        assertTrue(capturedMediaFile.getUrl().startsWith(filePath));
+        assertTrue(capturedMediaFile.getUrl().startsWith(directoryPath));
         assertTrue(capturedMediaFile.getUrl().endsWith(fileName));
         assertEquals(library, capturedMediaFile.getLibrary());
 

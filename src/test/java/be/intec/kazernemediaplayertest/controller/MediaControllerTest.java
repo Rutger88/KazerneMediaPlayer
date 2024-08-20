@@ -60,7 +60,7 @@ public class MediaControllerTest {
     void testUploadMedia() throws Exception {
         Long libraryId = 1L;
         String fileName = "Test.wav";
-        String filePath = "D:/Rendered projects/2024/" + fileName;
+        String filePath = "D:\\KazerneMediaPlayer Songs 2024" + fileName;
 
         MediaFile mediaFile = new MediaFile();
         mediaFile.setName(fileName);

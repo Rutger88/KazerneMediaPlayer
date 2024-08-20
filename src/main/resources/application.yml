@@ -27,7 +27,7 @@ spring:
 
 # Media configuration
 media:
-  upload-dir: D:/Rendered projects/2024/
+  upload-dir: D:/KazerneMediaPlayer Songs 2024
 
 # Server configuration
 server:

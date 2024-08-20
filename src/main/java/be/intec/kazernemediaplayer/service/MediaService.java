@@ -1,9 +1,11 @@
 package be.intec.kazernemediaplayer.service;
 
+
 import be.intec.kazernemediaplayer.model.Library;
 import be.intec.kazernemediaplayer.model.MediaFile;
 import be.intec.kazernemediaplayer.repository.LibraryRepository;
 import be.intec.kazernemediaplayer.repository.MediaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,15 +23,15 @@ public class MediaService {
     @Value("${media.upload-dir}")
     private String directoryPath;
 
-    private final MediaRepository mediaRepository;
-    private final LibraryRepository libraryRepository;
+    @Autowired
+    private MediaRepository mediaRepository;
+
+    @Autowired
+    private LibraryRepository libraryRepository;
+    private static final String MEDIA_DIR = "D:/Rendered projects/2024";
+
 
     private MediaFile currentlyPlaying;
-
-    public MediaService(MediaRepository mediaRepository, LibraryRepository libraryRepository) {
-        this.mediaRepository = mediaRepository;
-        this.libraryRepository = libraryRepository;
-    }
 
     public MediaFile uploadMedia(MultipartFile multipartFile, Long libraryId) throws IOException {
         if (multipartFile.isEmpty()) {
@@ -40,7 +42,7 @@ public class MediaService {
         Files.createDirectories(Paths.get(directoryPath));
 
         // Sanitize file name and handle potential filename collisions
-        String originalFileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString();
+        String originalFileName = Paths.get(multipartFile.getOriginalFilename()).getFileName().toString(); // Ensure it's a safe file name
         String uniqueFileName = System.currentTimeMillis() + "_" + originalFileName;
         String filePath = directoryPath + uniqueFileName;
 
@@ -52,20 +54,31 @@ public class MediaService {
         Library library = libraryRepository.findById(libraryId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid library ID"));
 
-        // Create and save the MediaFile entity
+        // Create and initialize the MediaFile entity
         MediaFile mediaFile = new MediaFile();
         mediaFile.setName(originalFileName);
         mediaFile.setUrl(filePath);
+        mediaFile.setType(detectMediaType(originalFileName)); // Set the correct media type
         mediaFile.setLibrary(library);
 
+        // Save the MediaFile entity to the database
         return mediaRepository.save(mediaFile);
+    }
+
+    private String detectMediaType(String fileName) {
+        if (fileName.endsWith(".mp3")) {
+            return "audio/mpeg";
+        } else if (fileName.endsWith(".mp4")) {
+            return "video/mp4";
+        }
+        // Add more conditions as needed
+        return "unknown";
     }
 
     public MediaFile playMedia(Long mediaId) {
         currentlyPlaying = mediaRepository.findById(mediaId).orElse(null);
         return currentlyPlaying;
     }
-
     public MediaFile getCurrentlyPlaying() {
         return currentlyPlaying;
     }
@@ -95,6 +108,25 @@ public class MediaService {
         }
         return currentlyPlaying;
     }
+   /* public MediaFile playNext(Long currentId) {
+        Optional<MediaFile> nextMediaFile = mediaRepository.findById(currentId + 1);
+        if (nextMediaFile.isPresent()) {
+            currentlyPlaying = nextMediaFile.get();
+        } else {
+            throw new MediaNotFoundException("Next media file not found");
+        }
+        return currentlyPlaying;
+    }*/
+
+   /* public MediaFile playPrevious(Long currentId) {
+        Optional<MediaFile> previousMediaFile = mediaRepository.findById(currentId - 1);
+        if (previousMediaFile.isPresent()) {
+            currentlyPlaying = previousMediaFile.get();
+        } else {
+            throw new MediaNotFoundException("Previous media file not found");
+        }
+        return currentlyPlaying;
+    }*/
 
     private int findCurrentIndex(List<MediaFile> mediaFiles, Long currentId) {
         for (int i = 0; i < mediaFiles.size(); i++) {
@@ -104,8 +136,13 @@ public class MediaService {
         }
         return -1; // Not found
     }
+        @Autowired
+        public MediaService(MediaRepository mediaRepository) {
+            this.mediaRepository = mediaRepository;
+        }
 
-    public List<MediaFile> findAll() {
-        return mediaRepository.findAll();
+        public List<MediaFile> findAll() {
+            return mediaRepository.findAll();
+        }
     }
-}
+
