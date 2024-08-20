@@ -20,7 +20,7 @@ public class MediaFile {
     private String url;
 
     @Column
-    private int duration; // in seconds
+    private Integer duration; // in seconds
 
     @Column(length = 1000)
     private String description;
