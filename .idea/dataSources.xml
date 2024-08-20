@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="mediaplayerdb@localhost" uuid="2bab5b8a-426f-4b88-9ef5-bd02c7681007">
+    <data-source source="LOCAL" name="mediaplayerdb@localhost" uuid="cf8226db-48e4-4102-a6fc-9af9ae6fffda">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
