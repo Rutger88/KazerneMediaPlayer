@@ -19,7 +19,12 @@ public class MediaFile {
     @Column(length = 500)
     private String url;
 
-    @ManyToOne
+    @Column
+    private int duration; // in seconds
+
+    @Column(length = 1000)
+    private String description;
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "library_id")
     @JsonBackReference
     private Library library;
@@ -27,18 +32,22 @@ public class MediaFile {
     public MediaFile() {
     }
 
-    public MediaFile(String name, String type, String url, Library library) {
+    public MediaFile(String name, String type, String url,int duration, String description, Library library) {
         this.name = name;
         this.type = type;
         this.url = url;
+        this.duration = duration;
+        this.description = description;
         this.library = library;
     }
 
-    public MediaFile(Long id, String name, String type, String url, Library library) {
+    public MediaFile(Long id, String name, String type, String url,int duration, String description, Library library) {
         this.id = id;
         this.name = name;
         this.type = type;
         this.url = url;
+        this.duration = duration;
+        this.description = description;
         this.library = library;
     }
 
@@ -91,11 +100,25 @@ public class MediaFile {
                 Objects.equals(name, mediaFile.name) &&
                 Objects.equals(type, mediaFile.type) &&
                 Objects.equals(url, mediaFile.url) &&
+                Objects.equals(description, mediaFile.description) &&
                 Objects.equals(library, mediaFile.library);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, type, url, library);
+        return Objects.hash(id, name, type, url,duration, description, library);
+    }
+    @Override
+    public String toString() {
+        return "MediaFile{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", url='" + url + '\'' +
+                ", duration=" + duration +
+                ", description='" + description + '\'' +
+                ", library=" + (library != null ? library.getId() : "null") +
+                '}';
     }
 }
+
