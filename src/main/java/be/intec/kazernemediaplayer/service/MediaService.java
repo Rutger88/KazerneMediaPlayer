@@ -31,7 +31,7 @@ public class MediaService {
 
     @Autowired
     private LibraryRepository libraryRepository;
-    private static final String MEDIA_DIR = "D:/Rendered projects/2024";
+    private static final String MEDIA_DIR = "D:\\KazerneMediaPlayer Songs 2024";
 
 
     private MediaFile currentlyPlaying;
