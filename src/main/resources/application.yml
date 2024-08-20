@@ -25,6 +25,10 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
+# Media configuration
+media:
+  upload-dir: D:/Rendered projects/2024/
+
 # Server configuration
 server:
   port: 8080

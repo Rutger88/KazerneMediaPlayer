@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/media")
 public class MediaController {
@@ -56,6 +57,10 @@ public class MediaController {
     public ResponseEntity<MediaFile> playNext(@PathVariable Long currentId) {
         logger.info("Received request to play next media after id: {}", currentId);
         MediaFile nextMediaFile = mediaService.playNext(currentId);
+        if (nextMediaFile == null) {
+            logger.error("Next media file not found after id: {}", currentId);
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(nextMediaFile);
     }
 
@@ -63,8 +68,13 @@ public class MediaController {
     public ResponseEntity<MediaFile> playPrevious(@PathVariable Long currentId) {
         logger.info("Received request to play previous media before id: {}", currentId);
         MediaFile previousMediaFile = mediaService.playPrevious(currentId);
+        if (previousMediaFile == null) {
+            logger.error("Previous media file not found before id: {}", currentId);
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(previousMediaFile);
     }
+
 
     @GetMapping("/stream/{id}")
     public ResponseEntity<String> streamMedia(@PathVariable Long id) {
