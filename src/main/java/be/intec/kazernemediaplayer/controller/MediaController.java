@@ -54,11 +54,22 @@ public class MediaController {
     @GetMapping(value = "/play/{currentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MediaFile> playMedia(@PathVariable Long currentId) {
         logger.debug("Received request to play media with id: {}", currentId);
-        MediaFile mediaFile = mediaService.playMedia(currentId);
-        logger.debug("Returning media file: {}", mediaFile);
-        return ResponseEntity.ok(mediaFile);
+        try {
+            MediaFile mediaFile = mediaService.playMedia(currentId);
+            if (mediaFile == null) {
+                logger.error("Media file not found with id: {}", currentId);
+                return ResponseEntity.notFound().build();
+            }
+            logger.debug("Returning media file: {}", mediaFile);
+            return ResponseEntity.ok(mediaFile);
+        } catch (MediaNotFoundException ex) {
+            logger.error("Media file not found with id: {}", currentId, ex);
+            return ResponseEntity.notFound().build();
+        } catch (Exception ex) {
+            logger.error("An unexpected error occurred while trying to play media with id: {}", currentId, ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-
     @PostMapping("/stop")
     public ResponseEntity<Void> stopMedia() {
         logger.info("Received request to stop media playback.");

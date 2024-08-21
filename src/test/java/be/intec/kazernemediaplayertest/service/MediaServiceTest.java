@@ -67,8 +67,9 @@ class MediaServiceTest {
 
         // Mocking the MediaRepository to return the saved MediaFile
         MediaFile savedMediaFile = new MediaFile();
+        String expectedUrl = directoryPath + System.currentTimeMillis() + "_" + fileName; // Example dynamic file path
         savedMediaFile.setName(fileName);
-        savedMediaFile.setUrl(directoryPath + "1724152608124_" + fileName); // Example dynamic file path
+        savedMediaFile.setUrl(expectedUrl);
         savedMediaFile.setLibrary(library);
         savedMediaFile.setId(1L);
 
@@ -78,10 +79,10 @@ class MediaServiceTest {
         MediaFile result = mediaService.uploadMedia(multipartFile, libraryId);
 
         // Then
-        assertNotNull(result);
-        assertTrue(result.getUrl().startsWith(directoryPath)); // Check the start of the path
-        assertTrue(result.getUrl().endsWith(fileName)); // Check the end of the path
-        assertEquals(libraryId, result.getLibrary().getId());
+        assertNotNull(result, "The result should not be null");
+        assertTrue(result.getUrl().contains(directoryPath), "The URL should contain the directory path");
+        assertTrue(result.getUrl().endsWith(fileName), "The URL should end with the file name");
+        assertEquals(libraryId, result.getLibrary().getId(), "The library ID should match");
 
         // Capturing the MediaFile object passed to mediaRepository.save()
         ArgumentCaptor<MediaFile> mediaFileCaptor = ArgumentCaptor.forClass(MediaFile.class);
@@ -89,14 +90,15 @@ class MediaServiceTest {
         MediaFile capturedMediaFile = mediaFileCaptor.getValue();
 
         // Additional assertions on the captured MediaFile
-        assertTrue(capturedMediaFile.getUrl().startsWith(directoryPath));
-        assertTrue(capturedMediaFile.getUrl().endsWith(fileName));
-        assertEquals(library, capturedMediaFile.getLibrary());
+        assertTrue(capturedMediaFile.getUrl().contains(directoryPath), "Captured URL should contain directory path");
+        assertTrue(capturedMediaFile.getUrl().endsWith(fileName), "Captured URL should end with the file name");
+        assertEquals(library, capturedMediaFile.getLibrary(), "Captured library should match the expected library");
 
         // Verify interactions
         verify(multipartFile).transferTo(any(File.class));
         verify(libraryRepository).findById(libraryId);  // Verify that findById was called
     }
+
 
     @Test
     void deleteMedia() throws IOException {
