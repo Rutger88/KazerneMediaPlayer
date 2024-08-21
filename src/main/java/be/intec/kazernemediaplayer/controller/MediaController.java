@@ -7,6 +7,9 @@ import be.intec.kazernemediaplayer.service.StreamingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200")
@@ -36,6 +42,7 @@ public class MediaController {
         List<MediaFile> mediaFiles = mediaService.findAll();
         return ResponseEntity.ok(mediaFiles);
     }
+
     @PostMapping("/upload")
     public ResponseEntity<MediaFile> uploadMedia(@RequestParam("file") MultipartFile file, @RequestParam("libraryId") Long libraryId) throws IOException {
         logger.info("Received file upload request for library ID: {}", libraryId);
@@ -82,28 +89,43 @@ public class MediaController {
     }
 
 
-    @GetMapping("/stream/{id}")
-    public ResponseEntity<String> streamMedia(@PathVariable Long id) {
-        logger.info("Received request to stream media with id: {}", id);
+    @GetMapping("/stream/{mediaId}")
+    public ResponseEntity<Resource> streamMedia(@PathVariable Long mediaId) {
         try {
-            String streamingUrl = streamingService.streamMedia(id);
-            logger.info("Streaming media with id: {}", id);
-            return ResponseEntity.ok(streamingUrl);
-        } catch (MediaNotFoundException e) {
-            logger.error("Media not found with id: {}", id);
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-    }
-        @DeleteMapping("/delete/{mediaId}")
-        public ResponseEntity<Void> deleteMedia(@PathVariable Long mediaId) {
-            try {
-                mediaService.deleteMedia(mediaId);
-                return ResponseEntity.ok().build();
-            } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            // Example: Fetch the media file path based on the media ID
+            Path mediaPath = Paths.get("D:/KazerneMediaPlayer Songs 2024/1724175884820_file.mp3"); // Example path
+            Resource mediaResource = new UrlResource(mediaPath.toUri());
+
+            if (mediaResource.exists() || mediaResource.isReadable()) {
+                String mediaType = Files.probeContentType(mediaPath);
+
+                if (mediaType == null) {
+                    mediaType = "application/octet-stream"; // Fallback to binary if type cannot be determined
+                }
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.CONTENT_TYPE, mediaType);
+
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(mediaResource);
+            } else {
+                throw new RuntimeException("Could not read the file!");
             }
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading the file", e);
         }
     }
 
+    @DeleteMapping("/delete/{mediaId}")
+    public ResponseEntity<Void> deleteMedia(@PathVariable Long mediaId) {
+        try {
+            mediaService.deleteMedia(mediaId);
+            return ResponseEntity.ok().build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+}
