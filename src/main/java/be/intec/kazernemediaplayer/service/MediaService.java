@@ -10,12 +10,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MediaService {
@@ -108,25 +111,35 @@ public class MediaService {
     }
 
     public MediaFile playNext(Long currentId) {
+        logger.info("Fetching next media file after ID: {}", currentId);
+
         List<MediaFile> mediaFiles = mediaRepository.findAll();
-        int currentIndex = findCurrentIndex(mediaFiles, currentId);
-        if (currentIndex >= 0 && currentIndex < mediaFiles.size() - 1) {
-            currentlyPlaying = mediaFiles.get(currentIndex + 1);
-        } else {
-            throw new MediaNotFoundException("Next media file not found");
-        }
-        return currentlyPlaying;
+        logger.info("Available media IDs: {}", mediaFiles.stream().map(MediaFile::getId).collect(Collectors.toList()));
+
+        // Try to find the next media file
+        Optional<MediaFile> nextMedia = mediaRepository.findFirstByIdGreaterThanOrderByIdAsc(currentId);
+
+        // If there is no next file, return the first file in the list
+        return nextMedia.orElseGet(() -> {
+            logger.info("No next media found, returning the first media file.");
+            return mediaFiles.get(0);
+        });
     }
 
     public MediaFile playPrevious(Long currentId) {
+        logger.info("Fetching previous media file before ID: {}", currentId);
+
         List<MediaFile> mediaFiles = mediaRepository.findAll();
-        int currentIndex = findCurrentIndex(mediaFiles, currentId);
-        if (currentIndex > 0) {
-            currentlyPlaying = mediaFiles.get(currentIndex - 1);
-        } else {
-            throw new MediaNotFoundException("Previous media file not found");
-        }
-        return currentlyPlaying;
+        logger.info("Available media IDs: {}", mediaFiles.stream().map(MediaFile::getId).collect(Collectors.toList()));
+
+        // Try to find the previous media file
+        Optional<MediaFile> previousMedia = mediaRepository.findFirstByIdLessThanOrderByIdDesc(currentId);
+
+        // If there is no previous file, return the last file in the list
+        return previousMedia.orElseGet(() -> {
+            logger.info("No previous media found, returning the last media file.");
+            return mediaFiles.get(mediaFiles.size() - 1);
+        });
     }
 
     private int findCurrentIndex(List<MediaFile> mediaFiles, Long currentId) {
