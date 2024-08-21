@@ -120,5 +120,15 @@ public class MediaFile {
                 ", library=" + (library != null ? library.getId() : "null") +
                 '}';
     }
+
+    public String getPath() {
+        if (this.url != null) {
+            return this.url;
+        } else if (this.library != null) {
+            return "/libraries/" + library.getId() + "/media/" + this.name;
+        } else {
+            throw new IllegalStateException("MediaFile path cannot be determined");
+        }
+    }
 }
 
