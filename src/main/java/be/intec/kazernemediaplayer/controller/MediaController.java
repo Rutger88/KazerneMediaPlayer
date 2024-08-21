@@ -78,18 +78,18 @@ public class MediaController {
     }
 
     @GetMapping(value = "/next/{currentId}", produces = MediaType.APPLICATION_JSON_VALUE)
-
     public ResponseEntity<MediaFile> playNext(@PathVariable Long currentId) {
         logger.info("Attempting to fetch next media file after currentId: {}", currentId);
-        logger.info("Received request to play next media after id: {}", currentId);
         try {
             MediaFile nextMediaFile = mediaService.playNext(currentId);
+            logger.info("Fetched next media file with ID: {} after currentId: {}", nextMediaFile.getId(), currentId);
             return ResponseEntity.ok(nextMediaFile);
         } catch (MediaNotFoundException ex) {
             logger.error("Next media file not found after id: {}", currentId, ex);
             return ResponseEntity.notFound().build();
         }
     }
+
 
     @GetMapping("/previous/{currentId}")
     public ResponseEntity<MediaFile> playPrevious(@PathVariable Long currentId) {
@@ -106,15 +106,19 @@ public class MediaController {
     @GetMapping("/stream/{mediaId}")
     public ResponseEntity<Resource> streamMedia(@PathVariable Long mediaId) {
         try {
-            // Example: Fetch the media file path based on the media ID
-            Path mediaPath = Paths.get("D:/KazerneMediaPlayer Songs 2024/1724175884820_file.mp3"); // Example path
+            String fileName = getFileNameFromMediaId(mediaId);
+            Path mediaPath = Paths.get("D:/KazerneMediaPlayer Songs 2024/", fileName);
+
+            // Add logging to verify the constructed path
+            System.out.println("Attempting to read file at path: " + mediaPath.toString());
+
             Resource mediaResource = new UrlResource(mediaPath.toUri());
 
-            if (mediaResource.exists() || mediaResource.isReadable()) {
+            if (mediaResource.exists() && mediaResource.isReadable()) {
                 String mediaType = Files.probeContentType(mediaPath);
 
                 if (mediaType == null) {
-                    mediaType = "application/octet-stream"; // Fallback to binary if type cannot be determined
+                    mediaType = "application/octet-stream";
                 }
 
                 HttpHeaders headers = new HttpHeaders();
@@ -124,12 +128,22 @@ public class MediaController {
                         .headers(headers)
                         .body(mediaResource);
             } else {
-                throw new RuntimeException("Could not read the file!");
+                throw new RuntimeException("Could not read the file: " + fileName);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error reading the file", e);
         }
     }
+
+
+    // Example method to get the filename from the mediaId
+    private String getFileNameFromMediaId(Long mediaId) {
+        // Implement logic to fetch filename based on mediaId
+        // For simplicity, assume mediaId maps directly to a filename
+        // Example: if mediaId = 1724175884820, then filename might be "1724175884820_file.mp3"
+        return mediaId + "_file.mp3"; // Simplified for example purposes
+    }
+
 
     @DeleteMapping("/delete/{mediaId}")
     public ResponseEntity<Void> deleteMedia(@PathVariable Long mediaId) {
