@@ -48,6 +48,7 @@ public class MediaControllerTest {
     private StreamingService streamingService;
 
     private ObjectMapper objectMapper = new ObjectMapper();
+
     @MockBean
     private SecurityFilterChain securityFilterChain;
     @BeforeEach
