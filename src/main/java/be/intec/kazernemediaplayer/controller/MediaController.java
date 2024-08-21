@@ -67,14 +67,17 @@ public class MediaController {
     }
 
     @GetMapping(value = "/next/{currentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+
     public ResponseEntity<MediaFile> playNext(@PathVariable Long currentId) {
+        logger.info("Attempting to fetch next media file after currentId: {}", currentId);
         logger.info("Received request to play next media after id: {}", currentId);
-        MediaFile nextMediaFile = mediaService.playNext(currentId);
-        if (nextMediaFile == null) {
-            logger.error("Next media file not found after id: {}", currentId);
+        try {
+            MediaFile nextMediaFile = mediaService.playNext(currentId);
+            return ResponseEntity.ok(nextMediaFile);
+        } catch (MediaNotFoundException ex) {
+            logger.error("Next media file not found after id: {}", currentId, ex);
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(nextMediaFile);
     }
 
     @GetMapping("/previous/{currentId}")
