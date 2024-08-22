@@ -13,4 +13,5 @@ public interface MediaRepository extends JpaRepository<MediaFile, Long> {
     Optional<MediaFile> findFirstByIdLessThanOrderByIdDesc(Long id);
     Optional<MediaFile> findFirstByOrderByIdAsc();
     Optional<MediaFile> findFirstByOrderByIdDesc();
+
 }

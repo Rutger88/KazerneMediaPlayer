@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -109,8 +110,15 @@ public class MediaController {
             String fileName = getFileNameFromMediaId(mediaId);
             Path mediaPath = Paths.get("D:/KazerneMediaPlayer Songs 2024/", fileName);
 
-            // Add logging to verify the constructed path
+            // Log the path
             System.out.println("Attempting to read file at path: " + mediaPath.toString());
+
+            if (Files.exists(mediaPath)) {
+                System.out.println("File exists: " + mediaPath.toString());
+            } else {
+                System.out.println("File does NOT exist: " + mediaPath.toString());
+                throw new RuntimeException("File not found: " + fileName);
+            }
 
             Resource mediaResource = new UrlResource(mediaPath.toUri());
 
@@ -137,11 +145,18 @@ public class MediaController {
 
 
     // Example method to get the filename from the mediaId
-    private String getFileNameFromMediaId(Long mediaId) {
-        // Implement logic to fetch filename based on mediaId
-        // For simplicity, assume mediaId maps directly to a filename
-        // Example: if mediaId = 1724175884820, then filename might be "1724175884820_file.mp3"
-        return mediaId + "_file.mp3"; // Simplified for example purposes
+    private String getFileNameFromMediaId(Long mediaId) throws IOException {
+        Path mediaDirectory = Paths.get("D:/KazerneMediaPlayer Songs 2024/");
+
+        try (Stream<Path> paths = Files.walk(mediaDirectory)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .filter(name -> name.contains(mediaId.toString()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("File not found for mediaId: " + mediaId));
+        }
     }
 
 
