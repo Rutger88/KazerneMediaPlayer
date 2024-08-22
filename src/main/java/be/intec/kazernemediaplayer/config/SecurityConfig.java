@@ -2,7 +2,6 @@ package be.intec.kazernemediaplayer.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,41 +19,17 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
-   /* @Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Disable CSRF protection
-               // .requiresChannel(channel -> channel.anyRequest().requiresSecure())  // Enforce HTTPS
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/media/upload", "/media/play/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/media/**").permitAll()  // Allow public access to media files
+                        .requestMatchers("/movies/**").permitAll()  // Allow public access to movies endpoints
+                        .anyRequest().authenticated()  // Require authentication for all other requests
                 )
-                .httpBasic(withDefaults());  // Enable HTTP Basic authentication with default settings
+                .httpBasic(withDefaults());  // Enables HTTP Basic Authentication
 
         return http.build();
-    }*/
-  /* @Bean
-   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-       http
-               .csrf(csrf -> csrf.disable())
-               .authorizeHttpRequests(authz -> authz
-                       .requestMatchers("/**").permitAll()  // Permit all requests
-               )
-               .httpBasic(withDefaults());
-
-       return http.build();
-   }*/
-   @Bean
-   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-       http
-               .csrf(csrf -> csrf.disable())
-               .authorizeHttpRequests(authz -> authz
-                       .requestMatchers("/media/**").permitAll()  // Permit public access to media files
-                       .anyRequest().authenticated()  // Require authentication for all other requests
-               )
-               .httpBasic(withDefaults());  // Enables HTTP Basic Authentication
-
-       return http.build();
-   }
+    }
 }

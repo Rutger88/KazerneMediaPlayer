@@ -6,12 +6,19 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-
+@Repository
 public interface MediaRepository extends JpaRepository<MediaFile, Long> {
+
     Optional<MediaFile> findById(Long id);
+
     Optional<MediaFile> findFirstByIdGreaterThanOrderByIdAsc(Long id);
+
     Optional<MediaFile> findFirstByIdLessThanOrderByIdDesc(Long id);
+
     Optional<MediaFile> findFirstByOrderByIdAsc();
+
     Optional<MediaFile> findFirstByOrderByIdDesc();
 
+    // Updated method to return an Optional<MediaFile>
+    Optional<MediaFile> findByIsPlayingTrue();
 }

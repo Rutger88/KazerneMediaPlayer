@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.Objects;
+
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 public class MediaFile {
@@ -14,8 +15,10 @@ public class MediaFile {
 
     @Column(length = 255)
     private String name;
+
     @Column(length = 100)
     private String type;
+
     @Column(length = 500)
     private String url;
 
@@ -24,15 +27,19 @@ public class MediaFile {
 
     @Column(length = 1000)
     private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "library_id")
     @JsonBackReference
     private Library library;
 
+    @Column
+    private Boolean isPlaying = false; // Default value directly
+
     public MediaFile() {
     }
 
-    public MediaFile(String name, String type, String url,int duration, String description, Library library) {
+    public MediaFile(String name, String type, String url, int duration, String description, Library library) {
         this.name = name;
         this.type = type;
         this.url = url;
@@ -41,7 +48,7 @@ public class MediaFile {
         this.library = library;
     }
 
-    public MediaFile(Long id, String name, String type, String url,int duration, String description, Library library) {
+    public MediaFile(Long id, String name, String type, String url, int duration, String description, Library library) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -83,12 +90,36 @@ public class MediaFile {
         this.url = url;
     }
 
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Library getLibrary() {
         return library;
     }
 
     public void setLibrary(Library library) {
         this.library = library;
+    }
+
+    public Boolean getIsPlaying() {
+        return isPlaying;
+    }
+
+    public void setIsPlaying(Boolean isPlaying) {
+        this.isPlaying = isPlaying;
     }
 
     @Override
@@ -100,14 +131,17 @@ public class MediaFile {
                 Objects.equals(name, mediaFile.name) &&
                 Objects.equals(type, mediaFile.type) &&
                 Objects.equals(url, mediaFile.url) &&
+                Objects.equals(duration, mediaFile.duration) &&
                 Objects.equals(description, mediaFile.description) &&
-                Objects.equals(library, mediaFile.library);
+                Objects.equals(library, mediaFile.library) &&
+                Objects.equals(isPlaying, mediaFile.isPlaying);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, type, url,duration, description, library);
+        return Objects.hash(id, name, type, url, duration, description, library, isPlaying);
     }
+
     @Override
     public String toString() {
         return "MediaFile{" +
@@ -118,6 +152,7 @@ public class MediaFile {
                 ", duration=" + duration +
                 ", description='" + description + '\'' +
                 ", library=" + (library != null ? library.getId() : "null") +
+                ", isPlaying=" + isPlaying +
                 '}';
     }
 
@@ -131,4 +166,3 @@ public class MediaFile {
         }
     }
 }
-

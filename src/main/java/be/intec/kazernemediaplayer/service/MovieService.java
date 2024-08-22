@@ -3,6 +3,7 @@ package be.intec.kazernemediaplayer.service;
 import be.intec.kazernemediaplayer.model.MediaFile;
 import be.intec.kazernemediaplayer.repository.MediaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,8 @@ import java.util.Optional;
 public class MovieService {
     private static final Logger logger = LoggerFactory.getLogger(MovieService.class);
 
+    @Value("${media.upload-dir}")
+    private String directoryPath;
     private final MediaRepository mediaRepository;
     private MediaFile currentlyPlayingMovie;
 
@@ -24,19 +27,27 @@ public class MovieService {
     public MediaFile playMovie(Long mediaId) {
         currentlyPlayingMovie = mediaRepository.findById(mediaId)
                 .orElseThrow(() -> new MediaNotFoundException("Movie not found with ID: " + mediaId));
+        currentlyPlayingMovie.setIsPlaying(true); // Ensure the movie is marked as playing
         logger.info("Playing movie with ID: {}", mediaId);
         return currentlyPlayingMovie;
     }
 
-    public MediaFile getCurrentlyPlayingMovie() {
-        return currentlyPlayingMovie;
+    public Optional<MediaFile> getCurrentlyPlayingMovie() {
+        if (currentlyPlayingMovie == null) {
+            logger.info("No movie is currently playing.");
+        } else {
+            logger.info("Currently playing movie: {}", currentlyPlayingMovie);
+        }
+        return Optional.ofNullable(currentlyPlayingMovie);
     }
 
     public void stopMovie() {
+        if (currentlyPlayingMovie != null) {
+            currentlyPlayingMovie.setIsPlaying(false); // Ensure the movie is marked as not playing
+            logger.info("Stopped playing movie with ID: {}", currentlyPlayingMovie.getId());
+        }
         currentlyPlayingMovie = null;
-        logger.info("Stopped playing movie.");
     }
-
     public MediaFile playNextMovie(Long currentId) {
         logger.info("Fetching next movie after ID: " + currentId);
         MediaFile nextMovie = mediaRepository.findFirstByIdGreaterThanOrderByIdAsc(currentId)
