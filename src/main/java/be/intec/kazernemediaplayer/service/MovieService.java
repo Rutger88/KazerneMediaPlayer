@@ -3,71 +3,111 @@ package be.intec.kazernemediaplayer.service;
 import be.intec.kazernemediaplayer.model.MediaFile;
 import be.intec.kazernemediaplayer.repository.MediaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class MovieService {
-    private static final Logger logger = LoggerFactory.getLogger(MovieService.class);
-
-    @Value("${media.upload-dir}")
-    private String directoryPath;
-    private final MediaRepository mediaRepository;
-    private MediaFile currentlyPlayingMovie;
 
     @Autowired
-    public MovieService(MediaRepository mediaRepository) {
-        this.mediaRepository = mediaRepository;
-    }
+    private MediaRepository mediaRepository;
+
+    private MediaFile currentlyPlayingMovie;
 
     public MediaFile playMovie(Long mediaId) {
         currentlyPlayingMovie = mediaRepository.findById(mediaId)
-                .orElseThrow(() -> new MediaNotFoundException("Movie not found with ID: " + mediaId));
-        currentlyPlayingMovie.setIsPlaying(true); // Ensure the movie is marked as playing
-        logger.info("Playing movie with ID: {}", mediaId);
+                .orElseThrow(() -> new RuntimeException("Movie not found with ID: " + mediaId));
+        currentlyPlayingMovie.setIsPlaying(true);
         return currentlyPlayingMovie;
-    }
-
-    public Optional<MediaFile> getCurrentlyPlayingMovie() {
-        if (currentlyPlayingMovie == null) {
-            logger.info("No movie is currently playing.");
-        } else {
-            logger.info("Currently playing movie: {}", currentlyPlayingMovie);
-        }
-        return Optional.ofNullable(currentlyPlayingMovie);
     }
 
     public void stopMovie() {
         if (currentlyPlayingMovie != null) {
-            currentlyPlayingMovie.setIsPlaying(false); // Ensure the movie is marked as not playing
-            logger.info("Stopped playing movie with ID: {}", currentlyPlayingMovie.getId());
+            currentlyPlayingMovie.setIsPlaying(false);
+            currentlyPlayingMovie = null;
         }
-        currentlyPlayingMovie = null;
     }
+
     public MediaFile playNextMovie(Long currentId) {
-        logger.info("Fetching next movie after ID: " + currentId);
-        MediaFile nextMovie = mediaRepository.findFirstByIdGreaterThanOrderByIdAsc(currentId)
-                .orElseThrow(() -> new MediaNotFoundException("No more movies available after ID " + currentId));
-        logger.info("Next movie ID: " + nextMovie.getId());
-        return nextMovie;
+        return mediaRepository.findFirstByIdGreaterThanOrderByIdAsc(currentId)
+                .orElseThrow(() -> new RuntimeException("No more movies available after ID " + currentId));
     }
 
     public MediaFile playPreviousMovie(Long currentId) {
-        logger.info("Fetching previous movie before ID: " + currentId);
-        Optional<MediaFile> previousMovie = mediaRepository.findFirstByIdLessThanOrderByIdDesc(currentId);
+        return mediaRepository.findFirstByIdLessThanOrderByIdDesc(currentId)
+                .orElseThrow(() -> new RuntimeException("No previous movie found before ID " + currentId));
+    }
 
-        if (previousMovie.isPresent()) {
-            logger.info("Previous movie ID: {}", previousMovie.get().getId());
-            return previousMovie.get();
-        } else {
-            logger.info("No previous movie found, returning the last movie.");
-            return mediaRepository.findFirstByOrderByIdDesc()
-                    .orElseThrow(() -> new MediaNotFoundException("No movies found in the library."));
+
+    public ResponseEntity<Resource> streamMovie(Long mediaId) {
+        try {
+            // Fetch the MediaFile object from the database
+            Optional<MediaFile> mediaFileOptional = mediaRepository.findById(mediaId);
+
+            if (mediaFileOptional.isEmpty()) {
+                throw new RuntimeException("Movie not found with ID: " + mediaId);
+            }
+
+            MediaFile mediaFile = mediaFileOptional.get();
+
+            // Ensure the file path is not null
+            String filePath = mediaFile.getUrl();
+            if (filePath == null) {
+                throw new RuntimeException("File path is null for movie with ID: " + mediaId);
+            }
+
+            // Create a Path object
+            Path path = Paths.get(filePath);
+
+            // Check if the file exists
+            if (!Files.exists(path)) {
+                throw new RuntimeException("File not found: " + filePath);
+            }
+
+            // Load the file as a resource
+            Resource resource = new UrlResource(path.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new RuntimeException("Could not read the file: " + filePath);
+            }
+
+            String contentType = Files.probeContentType(path);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_TYPE, contentType);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error streaming movie with ID: " + mediaId, e);
+        }
+    }
+
+    private String getFileNameFromMediaId(Long mediaId) throws IOException {
+        Path mediaDirectory = Paths.get("D:/KazerneMediaPlayer Songs 2024/");
+
+        try (Stream<Path> paths = Files.walk(mediaDirectory)) {
+            return paths
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .filter(name -> name.contains(mediaId.toString()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("File not found for mediaId: " + mediaId));
         }
     }
 }
-

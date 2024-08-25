@@ -7,6 +7,7 @@ import be.intec.kazernemediaplayer.service.StreamingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -51,6 +52,7 @@ public class MediaController {
         logger.info("File uploaded successfully with name: {}", uploadedMediaFile.getName());
         return ResponseEntity.ok(uploadedMediaFile);
     }
+
 
     @GetMapping(value = "/play/{currentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MediaFile> playMedia(@PathVariable Long currentId) {

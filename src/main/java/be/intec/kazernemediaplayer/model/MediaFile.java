@@ -35,7 +35,7 @@ public class MediaFile {
 
     @Column
     private Boolean isPlaying = false; // Default value directly
-
+    private String filePath;
     public MediaFile() {
     }
 
@@ -120,6 +120,13 @@ public class MediaFile {
 
     public void setIsPlaying(Boolean isPlaying) {
         this.isPlaying = isPlaying;
+    }
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
     }
 
     @Override
