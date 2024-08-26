@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,8 +27,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/media/**").permitAll()  // Allow public access to media files
                         .requestMatchers("/movies/**").permitAll()  // Allow public access to movies endpoints
+                        .requestMatchers("/register", "/login").permitAll()  // Allow public access to register and login endpoints
                         .anyRequest().authenticated()  // Require authentication for all other requests
                 )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .permitAll()
+                )
+                .logout(LogoutConfigurer::permitAll)
                 .httpBasic(withDefaults());  // Enables HTTP Basic Authentication
 
         return http.build();
