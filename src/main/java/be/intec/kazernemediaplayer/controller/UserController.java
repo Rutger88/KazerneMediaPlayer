@@ -51,11 +51,7 @@ public class UserController {
 
     @GetMapping("/login")
     public LoginResponse login(@RequestParam String username, @RequestParam String password) {
-        LoginResponse authResponse = userService.authenticateUser(username, password);
-        if (authResponse != null) {
-            return authResponse;
-        }
-        return null; // or throw an exception to handle invalid credentials
+        return userService.authenticateUser(username, password);// or throw an exception to handle invalid credentials
     }
 
     @DeleteMapping("/delete/{userId}")
