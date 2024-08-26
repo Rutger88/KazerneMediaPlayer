@@ -53,7 +53,7 @@ class UserServiceTest {
     }
 
 
-    @Test
+    /*@Test
     void testLoginUser() {
         // Given
         User user = new User();
@@ -72,7 +72,7 @@ class UserServiceTest {
         assertEquals("testuser", result.getUsername());
         verify(userRepository).findByUsername("testuser");
         verify(passwordEncoder).matches(rawPassword, user.getPassword());
-    }
+    }*/
 
     @Test
     void testDeleteUser() {

@@ -1,5 +1,8 @@
 package be.intec.kazernemediaplayer.controller;
 
+import be.intec.kazernemediaplayer.dto.LoginRequest;
+import be.intec.kazernemediaplayer.dto.LoginResponse;
+import be.intec.kazernemediaplayer.dto.RegisterRequest;
 import be.intec.kazernemediaplayer.model.User;
 import be.intec.kazernemediaplayer.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,31 +21,50 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         try {
+            User user = new User();
+            user.setUsername(registerRequest.getUsername());
+            user.setPassword(registerRequest.getPassword());
+            user.setEmail(registerRequest.getEmail());
+
             User registeredUser = userService.registerUser(user);
             return ResponseEntity.ok(registeredUser);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null); // Return 400 Bad Request for errors (e.g., username already taken)
+            return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<User> loginUser(@RequestBody User user) {
-        User loggedInUser = userService.loginUser(user.getUsername(), user.getPassword());
-        if (loggedInUser != null) {
-            return ResponseEntity.ok(loggedInUser);
+    @PostMapping("/loginUser")
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
+        try {
+            // Call the service method to get the LoginResponse
+            LoginResponse loginResponse = userService.loginUser(loginRequest.getUsername(), loginRequest.getPassword());
+
+            // Return the LoginResponse in the response entity
+            return ResponseEntity.ok(loginResponse);
+        } catch (RuntimeException e) {
+            // Handle invalid credentials by returning a 401 status
+            return ResponseEntity.status(401).body("Invalid username or password: " + e.getMessage());
         }
-        return ResponseEntity.status(401).build(); // Return 401 Unauthorized if login fails
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
+    @GetMapping("/login")
+    public LoginResponse login(@RequestParam String username, @RequestParam String password) {
+        LoginResponse authResponse = userService.authenticateUser(username, password);
+        if (authResponse != null) {
+            return authResponse;
+        }
+        return null; // or throw an exception to handle invalid credentials
+    }
+
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<?> deleteUserById(@PathVariable Long userId) {
         try {
             userService.deleteUser(userId);
-            return ResponseEntity.noContent().build(); // 204 No Content for successful deletion
+            return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.status(404).build(); // Return 404 if user not found
+            return ResponseEntity.status(404).body("User not found: " + e.getMessage());
         }
     }
 }

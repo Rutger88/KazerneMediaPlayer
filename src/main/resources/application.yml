@@ -17,7 +17,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
-    # No need for 'database-platform', it's typically handled via dialect
 
   # Multipart file upload configuration
   servlet:
@@ -32,6 +31,11 @@ spring:
 # Media configuration
 media:
   upload-dir: D:/KazerneMediaPlayer Songs 2024
+
+# JWT configuration
+jwt:
+  secret: your_jwt_secret_key
+  expiration: 3600 # or set your desired expiration time in seconds
 
 # Server configuration
 server:
