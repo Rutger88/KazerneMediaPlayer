@@ -2,9 +2,8 @@ package be.intec.kazernemediaplayer.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 public class Library {
@@ -16,19 +15,22 @@ public class Library {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    @OneToMany(mappedBy = "library")
+
+    @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
-    private List<MediaFile> mediaFiles;
+    private List<MediaFile> mediaFiles = new ArrayList<>();
 
-    public Library() {
-    }
+    // Constructors
+    public Library() {}
 
-    public Library(String name) {
+    public Library(String name, User user) {
         this.name = name;
+        this.user = user;
     }
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -45,14 +47,31 @@ public class Library {
         this.name = name;
     }
 
+    public User getUser() {
+        return user;
+    }
+
     public void setUser(User user) {
         this.user = user;
     }
+
     public List<MediaFile> getMediaFiles() {
         return mediaFiles;
     }
 
     public void setMediaFiles(List<MediaFile> mediaFiles) {
         this.mediaFiles = mediaFiles;
+    }
+
+    // Add a media file to the library
+    public void addMediaFile(MediaFile mediaFile) {
+        mediaFiles.add(mediaFile);
+        mediaFile.setLibrary(this);
+    }
+
+    // Remove a media file from the library
+    public void removeMediaFile(MediaFile mediaFile) {
+        mediaFiles.remove(mediaFile);
+        mediaFile.setLibrary(null);
     }
 }
