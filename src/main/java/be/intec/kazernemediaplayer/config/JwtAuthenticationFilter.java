@@ -2,6 +2,7 @@ package be.intec.kazernemediaplayer.config;
 
 import be.intec.kazernemediaplayer.model.User;
 import be.intec.kazernemediaplayer.service.UserService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,15 +32,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
 
-        // Check if the Authorization header is present and starts with "Bearer "
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwtToken = authorizationHeader.substring(7);
-            username = jwtUtil.extractUsername(jwtToken);
+            try {
+                username = jwtUtil.extractUsername(jwtToken);
+            } catch (ExpiredJwtException e) {
+                // Handle expired token
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("JWT token is expired");
+                return;
+            }
         }
 
-        // Validate the token and set the authentication in the Security Context
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userService.findByUsername(username); // Ensure this method exists in UserService
+            User user = userService.findByUsername(username);
             if (user != null && jwtUtil.validateToken(jwtToken, user)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         user, null, new ArrayList<>()
@@ -48,7 +54,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        // Continue the filter chain
-        filterChain.doFilter(request, response); // Corrected from 'chain.doFilter'
+        filterChain.doFilter(request, response);
     }
 }
