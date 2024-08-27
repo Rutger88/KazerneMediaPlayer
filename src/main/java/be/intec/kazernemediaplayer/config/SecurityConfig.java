@@ -46,13 +46,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/media/**").permitAll()
                         .requestMatchers("/movies/**").permitAll()
-                        .requestMatchers("/register", "/login").permitAll()
+                        .requestMatchers("/user/register", "/user/login").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll()
-                )
+
                 .logout(LogoutConfigurer::permitAll)
                 .httpBasic(withDefaults());
 

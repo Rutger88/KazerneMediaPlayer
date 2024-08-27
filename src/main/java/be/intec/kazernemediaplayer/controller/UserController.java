@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
@@ -35,7 +35,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/loginUser")
+    @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
         try {
             // Call the service method to get the LoginResponse
@@ -49,10 +49,10 @@ public class UserController {
         }
     }
 
-    @GetMapping("/login")
+   /* @GetMapping("/login")
     public LoginResponse login(@RequestParam String username, @RequestParam String password) {
         return userService.authenticateUser(username, password);// or throw an exception to handle invalid credentials
-    }
+    }*/
 
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<?> deleteUserById(@PathVariable Long userId) {
