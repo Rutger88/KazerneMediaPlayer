@@ -49,6 +49,15 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token, User user) {
-        return (user.getUsername().equals(extractUsername(token)) && !isTokenExpired(token));
+        try {
+            String username = extractUsername(token);
+            return (username.equals(user.getUsername()) && !isTokenExpired(token));
+        } catch (ExpiredJwtException e) {
+            System.out.println("JWT Token is expired");
+            return false;
+        } catch (Exception e) {
+            System.out.println("Invalid JWT Token");
+            return false;
+        }
     }
 }

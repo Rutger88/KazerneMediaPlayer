@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -37,10 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(jwtToken);
             } catch (ExpiredJwtException e) {
-                // Handle expired token
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("JWT token is expired");
-                return;
+                System.out.println("JWT token is expired");
             }
         }
 
@@ -48,8 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             User user = userService.findByUsername(username);
             if (user != null && jwtUtil.validateToken(jwtToken, user)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user, null, new ArrayList<>()
-                );
+                        user, null, Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

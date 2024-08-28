@@ -1,8 +1,10 @@
 package be.intec.kazernemediaplayer.controller;
 
+import be.intec.kazernemediaplayer.config.JwtUtil;
 import be.intec.kazernemediaplayer.dto.LoginRequest;
 import be.intec.kazernemediaplayer.dto.LoginResponse;
 import be.intec.kazernemediaplayer.dto.RegisterRequest;
+import be.intec.kazernemediaplayer.dto.RegisterResponse;
 import be.intec.kazernemediaplayer.model.User;
 import be.intec.kazernemediaplayer.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,8 @@ public class UserController {
     private final UserService userService;
 
     @Autowired
+    private JwtUtil jwtUtil;
+    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -23,14 +27,23 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         try {
-            User user = new User();
-            user.setUsername(registerRequest.getUsername());
-            user.setPassword(registerRequest.getPassword());
-            user.setEmail(registerRequest.getEmail());
+            // Register the user and create the associated library
+            User registeredUser = userService.registerUser(
+                    registerRequest.getUsername(),
+                    registerRequest.getPassword(),
+                    registerRequest.getEmail()
+            );
 
-            User registeredUser = userService.registerUser(user);
-            return ResponseEntity.ok(registeredUser);
+            // Generate a JWT token for the new user
+            String token = jwtUtil.generateToken(registeredUser.getUsername());
+
+            // Create a response object that includes the user and the token
+            RegisterResponse response = new RegisterResponse(registeredUser, token);
+
+            // Return the response
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            // Return a bad request response with the error message if registration fails
             return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
         }
     }

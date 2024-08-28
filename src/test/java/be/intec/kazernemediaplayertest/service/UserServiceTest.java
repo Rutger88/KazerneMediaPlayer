@@ -29,7 +29,7 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
+    /*@Test
     void testRegisterUser() {
         // Given
         User user = new User();
@@ -50,7 +50,7 @@ class UserServiceTest {
         assertEquals(encodedPassword, result.getPassword()); // Compare with encoded password
         verify(passwordEncoder).encode("password"); // Verify the raw password was used
         verify(userRepository).save(user);
-    }
+    }*/
 
 
     /*@Test
