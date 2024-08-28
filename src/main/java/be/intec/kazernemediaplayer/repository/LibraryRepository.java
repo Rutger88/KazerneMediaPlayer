@@ -11,4 +11,6 @@ public interface LibraryRepository extends JpaRepository<Library, Long> {
 
     // Or
     List<Library> findAllByUserId(Long userId); // If you meant to find by user ID
+
+    Optional<Library> findFirstByUserId(Long userId);
 }

@@ -28,11 +28,14 @@ public class UserService {
 
     public LoginResponse authenticateUser(String username, String password) {
         User user = userRepository.findByUsername(username);
-        if (user != null && passwordEncoder.matches(password, user.getPassword())) {  // Correct password verification
-            String token = jwtUtil.generateToken(username);  // Pass the correct type here
-            return new LoginResponse(user, token);
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+            Library userLibrary = libraryRepository.findFirstByUserId(user.getId())
+                    .orElseThrow(() -> new RuntimeException("No library found for the user"));
+
+            String token = jwtUtil.generateToken(username);
+            return new LoginResponse(user, userLibrary.getId(), token);
         }
-        throw new RuntimeException("Invalid username or password");  // Consider using a custom exception
+        throw new RuntimeException("Invalid username or password");
     }
 
     /*public User registerUser(User user) {
@@ -50,13 +53,13 @@ public class UserService {
             throw new IllegalArgumentException("Username is already taken");
         }
 
-        // Create new user
+        // Create a new user
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
 
-        // Save user to the database
+        // Save the user to the database
         userRepository.save(user);
 
         // Create a default library for the new user
@@ -64,7 +67,7 @@ public class UserService {
         library.setName("Default Library");
         library.setUser(user);  // Associate the library with the user
 
-        // Save library to the database
+        // Save the library to the database
         libraryRepository.save(library);
 
         return user;
@@ -72,11 +75,18 @@ public class UserService {
 
     public LoginResponse loginUser(String username, String password) {
         User user = userRepository.findByUsername(username);
-        if (user != null && passwordEncoder.matches(password, user.getPassword())) {  // Correct password verification
-            String token = jwtUtil.generateToken(username);  // Pass the correct type here
-            return new LoginResponse(user, token);
+        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+            // Retrieve the user's library ID
+            Library userLibrary = libraryRepository.findFirstByUserId(user.getId())
+                    .orElseThrow(() -> new RuntimeException("No library found for the user"));
+
+            // Generate JWT token
+            String token = jwtUtil.generateToken(username);
+
+            // Return LoginResponse with user, libraryId, and token
+            return new LoginResponse(user, userLibrary.getId(), token);
         }
-        throw new RuntimeException("Invalid username or password");  // Consider using a custom exception
+        throw new RuntimeException("Invalid username or password");
     }
 
     public User findUserByUsername(String username) {

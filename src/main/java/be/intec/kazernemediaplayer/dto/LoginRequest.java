@@ -3,6 +3,7 @@ package be.intec.kazernemediaplayer.dto;
 public class LoginRequest {
     private String username;
     private String password;
+    private Long libraryId;  // Add libraryId
 
     // Getters and setters
     public String getUsername() {
@@ -19,5 +20,13 @@ public class LoginRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Long getLibraryId() {
+        return libraryId;
+    }
+
+    public void setLibraryId(Long libraryId) {
+        this.libraryId = libraryId;
     }
 }
