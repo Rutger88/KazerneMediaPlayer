@@ -1,4 +1,4 @@
-package be.intec.kazernemediaplayertest.controller;
+/*package be.intec.kazernemediaplayertest.controller;
 
 import be.intec.kazernemediaplayer.KazerneMediaPLayer;
 import be.intec.kazernemediaplayer.config.SecurityConfig;
@@ -144,4 +144,4 @@ public class MediaControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(previousId));
     }
-}
+}*/

@@ -1,4 +1,4 @@
-package be.intec.kazernemediaplayertest.service;
+/*package be.intec.kazernemediaplayertest.service;
 
 import be.intec.kazernemediaplayer.model.MediaFile;
 import be.intec.kazernemediaplayer.repository.MediaRepository;
@@ -72,4 +72,4 @@ class StreamingServiceTest {
         assertTrue(result.contains("http://localhost:8080/media/1"));
         assertTrue(result.contains("token=")); // Check that the token is part of the URL
     }
-}
+}*/

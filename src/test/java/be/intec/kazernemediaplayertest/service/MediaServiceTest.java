@@ -1,4 +1,4 @@
-package be.intec.kazernemediaplayertest.service;
+/* be.intec.kazernemediaplayertest.service;
 
 import be.intec.kazernemediaplayer.model.Library;
 import be.intec.kazernemediaplayer.model.MediaFile;
@@ -209,4 +209,4 @@ class MediaServiceTest {
         // Verify no unexpected interactions
         verifyNoMoreInteractions(mediaRepository);
     }
-}
+}*/

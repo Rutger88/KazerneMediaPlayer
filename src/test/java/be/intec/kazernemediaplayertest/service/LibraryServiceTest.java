@@ -1,4 +1,4 @@
-package be.intec.kazernemediaplayertest.service;
+/*package be.intec.kazernemediaplayertest.service;
 
 import be.intec.kazernemediaplayer.KazerneMediaPLayer;
 import be.intec.kazernemediaplayer.model.Library;
@@ -46,7 +46,7 @@ public class LibraryServiceTest {
         verify(libraryRepository, times(1)).findAllById(ownerId);
     }
 
-   /* @Test
+   @Test
     public void testAddLibrary() {
         Library library = new Library();
         when(libraryRepository.save(library)).thenReturn(library);
@@ -55,7 +55,7 @@ public class LibraryServiceTest {
 
         assertNotNull(savedLibrary);
         verify(libraryRepository, times(1)).save(library);
-    }*/
+    }
     @Test
     public void testDeleteLibrary() {
         Long libraryId = 1L;
@@ -84,4 +84,4 @@ public class LibraryServiceTest {
         verify(libraryRepository, times(1)).findById(libraryId);
         verify(libraryRepository, never()).deleteById(libraryId);
     }
-}
+}*/

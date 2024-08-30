@@ -6,6 +6,7 @@ import be.intec.kazernemediaplayer.service.MediaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -16,11 +17,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Stream;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -58,6 +59,9 @@ public class MediaController {
                 logger.error("Media file not found with id: {}", currentId);
                 return ResponseEntity.notFound().build();
             }
+            // Update URL to point to the streaming endpoint
+            String mediaUrl = "/media/stream/" + mediaFile.getId();
+            mediaFile.setUrl(mediaUrl);  // Make sure the correct URL is sent to the frontend
             logger.debug("Returning media file: {}", mediaFile);
             return ResponseEntity.ok(mediaFile);
         } catch (MediaNotFoundException ex) {
@@ -81,6 +85,8 @@ public class MediaController {
         logger.info("Attempting to fetch next media file after currentId: {}", currentId);
         try {
             MediaFile nextMediaFile = mediaService.playNext(currentId);
+            // Update the URL for streaming
+            nextMediaFile.setUrl("/media/stream/" + nextMediaFile.getId());
             logger.info("Fetched next media file with ID: {} after currentId: {}", nextMediaFile.getId(), currentId);
             return ResponseEntity.ok(nextMediaFile);
         } catch (MediaNotFoundException ex) {
@@ -97,6 +103,8 @@ public class MediaController {
             logger.error("Previous media file not found before id: {}", currentId);
             return ResponseEntity.notFound().build();
         }
+        // Update the URL for streaming
+        previousMediaFile.setUrl("/media/stream/" + previousMediaFile.getId());
         return ResponseEntity.ok(previousMediaFile);
     }
 
@@ -125,6 +133,9 @@ public class MediaController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_TYPE, mediaType);
+            headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+            headers.add(HttpHeaders.PRAGMA, "no-cache");
+            headers.add(HttpHeaders.EXPIRES, "0");
 
             return ResponseEntity.ok()
                     .headers(headers)
@@ -134,6 +145,8 @@ public class MediaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
 
     @DeleteMapping("/delete/{mediaId}")
     public ResponseEntity<Void> deleteMedia(@PathVariable Long mediaId) {

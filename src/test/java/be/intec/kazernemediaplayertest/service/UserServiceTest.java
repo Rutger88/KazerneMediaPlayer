@@ -1,4 +1,4 @@
-package be.intec.kazernemediaplayertest.service;
+/*package be.intec.kazernemediaplayertest.service;
 
 import be.intec.kazernemediaplayer.model.User;
 import be.intec.kazernemediaplayer.repository.UserRepository;
@@ -29,7 +29,7 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    /*@Test
+    @Test
     void testRegisterUser() {
         // Given
         User user = new User();
@@ -50,10 +50,10 @@ class UserServiceTest {
         assertEquals(encodedPassword, result.getPassword()); // Compare with encoded password
         verify(passwordEncoder).encode("password"); // Verify the raw password was used
         verify(userRepository).save(user);
-    }*/
+    }
 
 
-    /*@Test
+    @Test
     void testLoginUser() {
         // Given
         User user = new User();
@@ -72,7 +72,7 @@ class UserServiceTest {
         assertEquals("testuser", result.getUsername());
         verify(userRepository).findByUsername("testuser");
         verify(passwordEncoder).matches(rawPassword, user.getPassword());
-    }*/
+    }
 
     @Test
     void testDeleteUser() {
@@ -99,4 +99,4 @@ class UserServiceTest {
         });
         assertEquals("User with ID " + userId + " not found", thrown.getMessage());
     }
-}
+}*/

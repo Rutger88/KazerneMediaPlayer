@@ -61,6 +61,20 @@ public class UserController {
             return ResponseEntity.status(401).body("Invalid username or password: " + e.getMessage());
         }
     }
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            try {
+                userService.logoutUser(token);
+                return ResponseEntity.ok("Logout successful");
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid token: " + e.getMessage());
+            }
+        }
+        return ResponseEntity.badRequest().body("Authorization header missing or invalid");
+    }
+
 
    /* @GetMapping("/login")
     public LoginResponse login(@RequestParam String username, @RequestParam String password) {

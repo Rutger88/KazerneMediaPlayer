@@ -6,12 +6,13 @@ public class LoginResponse {
     private User user;
     private Long libraryId;
     private String token;
-
+    private String refreshToken;
     // Constructor
-    public LoginResponse(User user, Long libraryId, String token) {
+    public LoginResponse(User user, Long libraryId, String token, String refreshToken) {
         this.user = user;
         this.libraryId = libraryId;  // This line was missing
         this.token = token;
+        this.refreshToken = refreshToken;
     }
 
     // Getters and Setters
@@ -25,6 +26,14 @@ public class LoginResponse {
 
     public User getUser() {
         return user;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public void setUser(User user) {

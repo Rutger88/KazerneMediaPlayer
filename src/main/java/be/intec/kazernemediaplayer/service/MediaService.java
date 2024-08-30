@@ -48,19 +48,32 @@ public class MediaService {
         String filePath = Paths.get(directoryPath, uniqueFileName).toString();
 
         File file = new File(filePath);
-        multipartFile.transferTo(file);
 
+        try {
+            multipartFile.transferTo(file);
+        } catch (IOException e) {
+            logger.error("Failed to save file: " + uniqueFileName, e);
+            throw e;
+        }
+
+        logger.info("Attempting to find library with ID: {}", libraryId);
         Library library = libraryRepository.findById(libraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid library ID"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid library ID: " + libraryId));
 
         MediaFile mediaFile = new MediaFile();
         mediaFile.setName(originalFileName);
-        mediaFile.setUrl(filePath); // Make sure this is set
+        mediaFile.setUrl("/media/stream/" + uniqueFileName);  // Update this line to set the correct stream URL
+        mediaFile.setFilePath(filePath);
         mediaFile.setType(detectMediaType(originalFileName));
         mediaFile.setLibrary(library);
-        mediaFile.setFilePath(filePath); // Ensure this is set
 
-        return mediaRepository.save(mediaFile);
+        try {
+            logger.info("Saving media file for library ID: {}", libraryId);
+            return mediaRepository.save(mediaFile);
+        } catch (Exception e) {
+            Files.deleteIfExists(Paths.get(filePath)); // Rollback file save on database failure
+            throw e;
+        }
     }
 
     public void deleteMedia(Long mediaId) throws IOException {
@@ -68,13 +81,13 @@ public class MediaService {
                 .orElseThrow(() -> new IllegalArgumentException("Media file not found with ID: " + mediaId));
 
         // Delete the file from the filesystem
-        File file = new File(mediaFile.getUrl());
+        File file = new File(mediaFile.getFilePath());  // Update this to file path
         if (file.exists()) {
             if (!file.delete()) {
-                throw new IOException("Failed to delete file: " + mediaFile.getUrl());
+                throw new IOException("Failed to delete file: " + mediaFile.getFilePath());
             }
         } else {
-            logger.warn("File not found in filesystem: {}", mediaFile.getUrl());
+            logger.warn("File not found in filesystem: {}", mediaFile.getFilePath());
         }
 
         // Always delete the media file record from the database
@@ -91,7 +104,11 @@ public class MediaService {
     }
 
     public MediaFile playMedia(Long mediaId) {
-        currentlyPlaying = mediaRepository.findById(mediaId).orElse(null);
+        MediaFile mediaFile = mediaRepository.findById(mediaId).orElse(null);
+        if (mediaFile != null) {
+            mediaFile.setUrl("/media/stream/" + mediaId);  // Set the correct URL for streaming
+            currentlyPlaying = mediaFile;
+        }
         return currentlyPlaying;
     }
 
@@ -105,59 +122,37 @@ public class MediaService {
 
     public MediaFile playNext(Long currentId) {
         logger.info("Fetching next media file after ID: " + currentId);
-
-        // Fetch the next media file with a valid filePath
         Optional<MediaFile> nextMediaOpt = mediaRepository.findFirstByIdGreaterThanOrderByIdAsc(currentId);
 
-        while (nextMediaOpt.isPresent()) {
+        if (nextMediaOpt.isPresent()) {
             MediaFile nextMedia = nextMediaOpt.get();
-
-            // Check if the file path is valid
-            if (nextMedia.getFilePath() != null && !nextMedia.getFilePath().isEmpty()) {
-                logger.info("Next media ID: " + nextMedia.getId());
-
-                // Update the currently playing media file
-                currentlyPlaying = nextMedia;
-                return nextMedia;
-            } else {
-                logger.warn("Next media file has no valid file path, skipping to next available.");
-                // Fetch the next media file
-                nextMediaOpt = mediaRepository.findFirstByIdGreaterThanOrderByIdAsc(nextMedia.getId());
-            }
+            logger.info("Next media ID: " + nextMedia.getId());
+            nextMedia.setUrl("/media/stream/" + nextMedia.getId());  // Ensure correct URL
+            currentlyPlaying = nextMedia;
+            return nextMedia;
+        } else {
+            logger.info("No more media files available after ID: " + currentId);
+            throw new MediaNotFoundException("No more media files available.");
         }
-
-        throw new MediaNotFoundException("No more media files available after ID " + currentId);
     }
 
     public MediaFile playPrevious(Long currentId) {
         logger.info("Fetching previous media file before ID: {}", currentId);
-
-        // Fetch the previous media file with a valid filePath
         Optional<MediaFile> previousMediaOpt = mediaRepository.findFirstByIdLessThanOrderByIdDesc(currentId);
 
-        while (previousMediaOpt.isPresent()) {
+        if (previousMediaOpt.isPresent()) {
             MediaFile previousMedia = previousMediaOpt.get();
-
-            // Check if the file path is valid
-            if (previousMedia.getFilePath() != null && !previousMedia.getFilePath().isEmpty()) {
-                logger.info("Previous media ID: {}", previousMedia.getId());
-
-                // Update the currently playing media file
-                currentlyPlaying = previousMedia;
-                return previousMedia;
-            } else {
-                logger.warn("Previous media file has no valid file path, skipping to previous available.");
-                // Fetch the previous media file
-                previousMediaOpt = mediaRepository.findFirstByIdLessThanOrderByIdDesc(previousMedia.getId());
-            }
+            logger.info("Previous media ID: {}", previousMedia.getId());
+            previousMedia.setUrl("/media/stream/" + previousMedia.getId());  // Ensure correct URL
+            currentlyPlaying = previousMedia;
+            return previousMedia;
+        } else {
+            logger.info("No previous media found, fetching the last media file.");
+            currentlyPlaying = mediaRepository.findFirstByOrderByIdDesc()
+                    .orElseThrow(() -> new MediaNotFoundException("No media files found."));
+            return currentlyPlaying;
         }
-
-        logger.info("No previous media found, returning the last media file.");
-        currentlyPlaying = mediaRepository.findFirstByOrderByIdDesc()
-                .orElseThrow(() -> new MediaNotFoundException("No media files found in the library."));
-        return currentlyPlaying;
     }
-
 
     public List<MediaFile> findAll() {
         return mediaRepository.findAll();

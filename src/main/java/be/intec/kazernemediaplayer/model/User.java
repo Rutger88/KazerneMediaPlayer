@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 import java.util.Set;
 
 @Entity
@@ -88,4 +91,5 @@ public class User {
     public void setLibraries(Set<Library> libraries) {
         this.libraries = libraries;
     }
+
 }

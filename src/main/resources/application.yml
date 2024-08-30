@@ -22,11 +22,19 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 2GB
+      max-request-size: 2GB
   web:
     resources:
       static-locations: file:///D:/KazerneMediaPlayer Songs 2024/
+
+# Add the secret key for streaming security token generation
+streaming:
+  secret:
+    key: your-secret-key
+  token:
+    expiry:
+      seconds: 3600
 
 # Media configuration
 media:
@@ -35,7 +43,8 @@ media:
 # JWT configuration
 jwt:
   secret: your_jwt_secret_key
-  expiration: 3600 # or set your desired expiration time in seconds
+  expiration: 86400000  # or set your desired expiration time in milliseconds
+  refreshExpiration: 86400000  # 1 day
 
 # Server configuration
 server:

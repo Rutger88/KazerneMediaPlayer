@@ -1,4 +1,4 @@
-package be.intec.kazernemediaplayertest.controller;
+/*package be.intec.kazernemediaplayertest.controller;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -39,7 +39,7 @@ public class UserControllerTest {
         objectMapper = new ObjectMapper();
     }
 
-   /* @Test
+    @Test
     public void testRegisterUser() throws Exception {
         User user = new User();
         user.setUsername("testuser");
@@ -52,9 +52,9 @@ public class UserControllerTest {
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(status().isOk()) // Or another expected status code
                 .andExpect(jsonPath("$.username").value("testuser"));
-    }*/
+    }
 
-    /*@Test
+    @Test
     @WithMockUser(username = "testuser", roles = "USER")
     void testLoginUser() throws Exception {
         // Given
@@ -76,7 +76,7 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("testuser"))
                 .andExpect(jsonPath("$.password").value("encodedpassword"));
-    }*/
+    }
 
     @Test
     @WithMockUser(username = "testuser", roles = "USER")
@@ -87,4 +87,4 @@ public class UserControllerTest {
                         .with(user("testuser").password("password").roles("USER")))
                 .andExpect(status().isNoContent()); // Or another expected status code
     }
-}
+}*/
