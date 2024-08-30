@@ -3,6 +3,7 @@ package be.intec.kazernemediaplayer.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
 import java.util.Objects;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -22,6 +23,9 @@ public class MediaFile {
     @Column(length = 500)
     private String url;
 
+    @Column(length = 1000)
+    private String filePath; // Ensure this is set and used correctly
+
     @Column
     private Integer duration; // in seconds
 
@@ -35,28 +39,23 @@ public class MediaFile {
 
     @Column
     private Boolean isPlaying = false; // Default value directly
-    private String filePath;
+
+    // Constructors, getters, and setters
+
     public MediaFile() {
     }
 
-    public MediaFile(String name, String type, String url, int duration, String description, Library library) {
+    public MediaFile(String name, String type, String url, int duration, String description, Library library, String filePath) {
         this.name = name;
         this.type = type;
         this.url = url;
         this.duration = duration;
         this.description = description;
         this.library = library;
+        this.filePath = filePath;
     }
 
-    public MediaFile(Long id, String name, String type, String url, int duration, String description, Library library) {
-        this.id = id;
-        this.name = name;
-        this.type = type;
-        this.url = url;
-        this.duration = duration;
-        this.description = description;
-        this.library = library;
-    }
+    // Getters and Setters for all fields, including filePath
 
     public Long getId() {
         return id;
@@ -90,6 +89,14 @@ public class MediaFile {
         this.url = url;
     }
 
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
     public Integer getDuration() {
         return duration;
     }
@@ -121,13 +128,6 @@ public class MediaFile {
     public void setIsPlaying(Boolean isPlaying) {
         this.isPlaying = isPlaying;
     }
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -138,6 +138,7 @@ public class MediaFile {
                 Objects.equals(name, mediaFile.name) &&
                 Objects.equals(type, mediaFile.type) &&
                 Objects.equals(url, mediaFile.url) &&
+                Objects.equals(filePath, mediaFile.filePath) &&
                 Objects.equals(duration, mediaFile.duration) &&
                 Objects.equals(description, mediaFile.description) &&
                 Objects.equals(library, mediaFile.library) &&
@@ -146,7 +147,7 @@ public class MediaFile {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, type, url, duration, description, library, isPlaying);
+        return Objects.hash(id, name, type, url, filePath, duration, description, library, isPlaying);
     }
 
     @Override
@@ -156,6 +157,7 @@ public class MediaFile {
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", url='" + url + '\'' +
+                ", filePath='" + filePath + '\'' +
                 ", duration=" + duration +
                 ", description='" + description + '\'' +
                 ", library=" + (library != null ? library.getId() : "null") +
@@ -164,8 +166,8 @@ public class MediaFile {
     }
 
     public String getPath() {
-        if (this.url != null) {
-            return this.url;
+        if (this.filePath != null) {
+            return this.filePath;
         } else if (this.library != null) {
             return "/libraries/" + library.getId() + "/media/" + this.name;
         } else {

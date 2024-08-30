@@ -3,11 +3,9 @@ package be.intec.kazernemediaplayer.controller;
 import be.intec.kazernemediaplayer.model.MediaFile;
 import be.intec.kazernemediaplayer.service.MediaNotFoundException;
 import be.intec.kazernemediaplayer.service.MediaService;
-import be.intec.kazernemediaplayer.service.StreamingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -31,12 +29,10 @@ public class MediaController {
 
     private static final Logger logger = LoggerFactory.getLogger(MediaController.class);
     private final MediaService mediaService;
-    private final StreamingService streamingService;
 
     @Autowired
-    public MediaController(MediaService mediaService, StreamingService streamingService) {
+    public MediaController(MediaService mediaService) {
         this.mediaService = mediaService;
-        this.streamingService = streamingService;
     }
 
     @GetMapping
@@ -52,7 +48,6 @@ public class MediaController {
         logger.info("File uploaded successfully with name: {}", uploadedMediaFile.getName());
         return ResponseEntity.ok(uploadedMediaFile);
     }
-
 
     @GetMapping(value = "/play/{currentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MediaFile> playMedia(@PathVariable Long currentId) {
@@ -73,6 +68,7 @@ public class MediaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @PostMapping("/stop")
     public ResponseEntity<Void> stopMedia() {
         logger.info("Received request to stop media playback.");
@@ -93,7 +89,6 @@ public class MediaController {
         }
     }
 
-
     @GetMapping("/previous/{currentId}")
     public ResponseEntity<MediaFile> playPrevious(@PathVariable Long currentId) {
         logger.info("Received request to play previous media before id: {}", currentId);
@@ -105,62 +100,40 @@ public class MediaController {
         return ResponseEntity.ok(previousMediaFile);
     }
 
-
-    @GetMapping("/stream/{mediaId}")
+    @GetMapping(value = "/stream/{mediaId}")
     public ResponseEntity<Resource> streamMedia(@PathVariable Long mediaId) {
         try {
-            String fileName = getFileNameFromMediaId(mediaId);
-            Path mediaPath = Paths.get("D:/KazerneMediaPlayer Songs 2024/", fileName);
+            MediaFile mediaFile = mediaService.playMedia(mediaId);
+            String filePath = mediaFile.getFilePath();
 
-            // Log the path
-            System.out.println("Attempting to read file at path: " + mediaPath.toString());
+            if (filePath == null || filePath.isEmpty()) {
+                logger.error("File path is null or empty for media ID: {}", mediaId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
 
-            if (Files.exists(mediaPath)) {
-                System.out.println("File exists: " + mediaPath.toString());
-            } else {
-                System.out.println("File does NOT exist: " + mediaPath.toString());
-                throw new RuntimeException("File not found: " + fileName);
+            Path mediaPath = Paths.get(filePath);
+            if (!Files.exists(mediaPath)) {
+                logger.error("File not found: {}", filePath);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
 
             Resource mediaResource = new UrlResource(mediaPath.toUri());
-
-            if (mediaResource.exists() && mediaResource.isReadable()) {
-                String mediaType = Files.probeContentType(mediaPath);
-
-                if (mediaType == null) {
-                    mediaType = "application/octet-stream";
-                }
-
-                HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_TYPE, mediaType);
-
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(mediaResource);
-            } else {
-                throw new RuntimeException("Could not read the file: " + fileName);
+            String mediaType = Files.probeContentType(mediaPath);
+            if (mediaType == null) {
+                mediaType = "application/octet-stream";
             }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_TYPE, mediaType);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(mediaResource);
         } catch (Exception e) {
-            throw new RuntimeException("Error reading the file", e);
+            logger.error("Error reading the file for media ID: {}", mediaId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-
-    // Example method to get the filename from the mediaId
-    private String getFileNameFromMediaId(Long mediaId) throws IOException {
-        Path mediaDirectory = Paths.get("D:/KazerneMediaPlayer Songs 2024/");
-
-        try (Stream<Path> paths = Files.walk(mediaDirectory)) {
-            return paths
-                    .filter(Files::isRegularFile)
-                    .map(Path::getFileName)
-                    .map(Path::toString)
-                    .filter(name -> name.contains(mediaId.toString()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("File not found for mediaId: " + mediaId));
-        }
-    }
-
 
     @DeleteMapping("/delete/{mediaId}")
     public ResponseEntity<Void> deleteMedia(@PathVariable Long mediaId) {
