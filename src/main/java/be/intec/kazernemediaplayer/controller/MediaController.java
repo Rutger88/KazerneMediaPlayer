@@ -85,8 +85,7 @@ public class MediaController {
         logger.info("Attempting to fetch next media file after currentId: {}", currentId);
         try {
             MediaFile nextMediaFile = mediaService.playNext(currentId);
-            // Update the URL for streaming
-            nextMediaFile.setUrl("/media/stream/" + nextMediaFile.getId());
+            nextMediaFile.setUrl("/media/stream/" + nextMediaFile.getId());  // Set the URL here
             logger.info("Fetched next media file with ID: {} after currentId: {}", nextMediaFile.getId(), currentId);
             return ResponseEntity.ok(nextMediaFile);
         } catch (MediaNotFoundException ex) {

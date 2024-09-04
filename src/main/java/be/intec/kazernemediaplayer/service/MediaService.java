@@ -127,7 +127,6 @@ public class MediaService {
         if (nextMediaOpt.isPresent()) {
             MediaFile nextMedia = nextMediaOpt.get();
             logger.info("Next media ID: " + nextMedia.getId());
-            nextMedia.setUrl("/media/stream/" + nextMedia.getId());  // Ensure correct URL
             currentlyPlaying = nextMedia;
             return nextMedia;
         } else {
