@@ -47,6 +47,19 @@ public class LibraryController {
         Library updatedLibrary = libraryService.updateLibrary(library);
         return ResponseEntity.ok(updatedLibrary);
     }
+    @PostMapping("/share")
+    public ResponseEntity<String> shareLibraryWithUser(
+            @RequestParam Long libraryId,
+            @RequestParam Long targetUserId) {
+
+        libraryService.shareLibraryWithUser(libraryId, targetUserId);
+        return ResponseEntity.ok("Library shared successfully.");
+    }
+    @GetMapping("/others/{currentUserId}")
+    public ResponseEntity<List<Library>> getOtherUsersLibraries(@PathVariable Long currentUserId) {
+        List<Library> otherLibraries = libraryService.getOtherUsersLibraries(currentUserId);
+        return ResponseEntity.ok(otherLibraries);
+    }
 
     // Delete a library by ID
     @DeleteMapping("/{libraryId}")

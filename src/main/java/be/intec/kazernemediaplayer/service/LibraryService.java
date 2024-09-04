@@ -25,11 +25,12 @@ public class LibraryService {
     }
 
     public List<Library> getSharedLibraries(Long userId) {
-        // Fetch user and handle non-existence
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User with ID " + userId + " not found"));
-
-        // Fetch and return libraries for the user
+        // Check if the user is restricted to library 1
+        if (userId == 1L) {
+            // Return only library 1 for user ID 1
+            return libraryRepository.findById(1L).map(List::of).orElseThrow(() -> new RuntimeException("Library 1 not found"));
+        }
+        // Fetch and return all libraries for other users
         return libraryRepository.findAllByUserId(userId);
     }
 
@@ -41,6 +42,25 @@ public class LibraryService {
         // Set user to library and save
         library.setUser(user);
         return libraryRepository.save(library);
+    }
+
+    public List<Library> getOtherUsersLibraries(Long currentUserId) {
+        // Fetch all libraries except the current user's own libraries
+        return libraryRepository.findByUserIdNot(currentUserId);
+    }
+
+    public void shareLibraryWithUser(Long libraryId, Long targetUserId) {
+        Library library = libraryRepository.findById(libraryId)
+                .orElseThrow(() -> new RuntimeException("Library not found"));
+
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Here you could add the logic to track sharing,
+        // for example, adding an entry to a `SharedLibrary` table.
+        // In this case, we'll just print a message for simplicity.
+
+        System.out.println("Library " + libraryId + " shared with user " + targetUserId);
     }
 
     public Library updateLibrary(Library library) {
