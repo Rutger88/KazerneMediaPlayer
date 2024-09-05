@@ -85,8 +85,10 @@ public class LibraryService {
         return libraryRepository.findAll();
     }
 
-    public Library getLibraryById(Long libraryId) {
+    public Library getLibraryById(Long userId, Long libraryId) {
+        // Fetch library by ID and userId to ensure user owns the library
         return libraryRepository.findById(libraryId)
-                .orElseThrow(() -> new RuntimeException("Library with ID " + libraryId + " not found"));
+                .filter(library -> library.getUser().getId().equals(userId))
+                .orElseThrow(() -> new RuntimeException("Library not found or does not belong to the user."));
     }
 }

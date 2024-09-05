@@ -35,8 +35,9 @@ public class LibraryController {
 
     // Get a specific library by ID
     @GetMapping("/{libraryId}")
-    public ResponseEntity<Library> getLibraryById(@PathVariable Long libraryId) {
-        Library library = libraryService.getLibraryById(libraryId);
+    public ResponseEntity<Library> getLibraryById(@RequestHeader("userId") Long userId, @PathVariable Long libraryId) {
+        // Fetch the library, ensuring it belongs to the user
+        Library library = libraryService.getLibraryById(userId, libraryId);
         return ResponseEntity.ok(library);
     }
 
