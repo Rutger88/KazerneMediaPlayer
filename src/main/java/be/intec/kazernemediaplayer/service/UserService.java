@@ -1,5 +1,6 @@
 package be.intec.kazernemediaplayer.service;
 
+import be.intec.kazernemediaplayer.config.CustomUserDetails;
 import be.intec.kazernemediaplayer.config.JwtUtil;
 import be.intec.kazernemediaplayer.controller.MediaController;
 import be.intec.kazernemediaplayer.model.Library;
@@ -9,12 +10,15 @@ import be.intec.kazernemediaplayer.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import be.intec.kazernemediaplayer.dto.LoginResponse;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -111,8 +115,12 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public User loadUserByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        return new CustomUserDetails(user);  // Return an instance of CustomUserDetails
     }
 
     public void deleteUser(Long userId) {

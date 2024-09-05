@@ -2,6 +2,8 @@ package be.intec.kazernemediaplayer.repository;
 
 import be.intec.kazernemediaplayer.model.MediaFile;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -17,10 +19,11 @@ public interface MediaRepository extends JpaRepository<MediaFile, Long> {
 
     Optional<MediaFile> findFirstByOrderByIdAsc();
 
-
     Optional<MediaFile> findFirstByIdGreaterThanAndLibraryIdOrderByIdAsc(Long currentId, Long libraryId);
 
     Optional<MediaFile> findFirstByIdLessThanAndLibraryIdOrderByIdDesc(Long currentId, Long libraryId);
+
+
 
     Optional<MediaFile> findFirstByLibraryIdOrderByIdDesc(Long libraryId);
     Optional<MediaFile> findFirstByOrderByIdDesc();

@@ -1,6 +1,10 @@
 package be.intec.kazernemediaplayer.controller;
 
+import be.intec.kazernemediaplayer.config.CustomUserDetailService;
+import be.intec.kazernemediaplayer.config.CustomUserDetails;
+import be.intec.kazernemediaplayer.model.Library;
 import be.intec.kazernemediaplayer.model.MediaFile;
+import be.intec.kazernemediaplayer.repository.LibraryRepository;
 import be.intec.kazernemediaplayer.repository.MediaRepository;
 import be.intec.kazernemediaplayer.service.MediaNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +19,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @RestController
 @RequestMapping("/stream")
@@ -27,27 +36,42 @@ public class StreamingController {
     @Autowired
     private MediaRepository mediaRepository;
 
+    @Autowired
+    private LibraryRepository libraryRepository;
+
+
     @GetMapping("/{mediaId}")
     public ResponseEntity<Resource> streamMedia(
             @PathVariable Long mediaId,
             @RequestHeader(value = "Range", required = false) String rangeHeader) {
         try {
-            // Fetch the media file based on media ID from the database
-            Optional<MediaFile> mediaFileOptional = mediaRepository.findById(mediaId);
+            // Step 1: Get the currently authenticated user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+            }
+
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getId(); // Get the userId from CustomUserDetails
+
+            // Step 2: Fetch the user's library using their user ID
+            Library userLibrary = libraryRepository.findFirstByUserId(userId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have a library"));
+
+            // Step 3: Fetch the media file based on mediaId and libraryId
+            Optional<MediaFile> mediaFileOptional = mediaRepository.findByIdAndLibraryId(mediaId, userLibrary.getId());
             if (mediaFileOptional.isEmpty()) {
-                throw new MediaNotFoundException("Media file not found for ID: " + mediaId);
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User does not have access to this media file");
             }
 
             MediaFile mediaFile = mediaFileOptional.get();
             Path mediaPath = Paths.get(mediaFile.getFilePath());
 
-            // Check if the file exists and is readable
+            // Step 4: File validation and streaming logic
             if (!Files.exists(mediaPath) || !Files.isReadable(mediaPath)) {
-                throw new MediaNotFoundException("Media file is not accessible or does not exist: " + mediaFile.getFilePath());
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Media file is not accessible or does not exist");
             }
 
-            // Load the resource
-            Resource mediaResource = new InputStreamResource(Files.newInputStream(mediaPath));
             String mediaType = Files.probeContentType(mediaPath);
             mediaType = (mediaType == null) ? "application/octet-stream" : mediaType;
 
@@ -56,43 +80,51 @@ public class StreamingController {
             headers.add(HttpHeaders.CONTENT_TYPE, mediaType);
 
             if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
-                // Parse the Range header and extract start and end positions
                 HttpRange range = HttpRange.parseRanges(rangeHeader).get(0);
                 long rangeStart = range.getRangeStart(fileSize);
                 long rangeEnd = range.getRangeEnd(fileSize);
                 long contentLength = rangeEnd - rangeStart + 1;
 
-                // Open InputStream for the requested byte range
-                try (InputStream inputStream = Files.newInputStream(mediaPath)) {
-                    inputStream.skip(rangeStart); // Skip to the start of the range
+                RandomAccessFile randomAccessFile = new RandomAccessFile(mediaPath.toFile(), "r");
+                randomAccessFile.seek(rangeStart);
 
-                    headers.add(HttpHeaders.CONTENT_RANGE, "bytes " + rangeStart + "-" + rangeEnd + "/" + fileSize);
-                    headers.add(HttpHeaders.ACCEPT_RANGES, "bytes");
+                InputStreamResource inputStreamResource = new InputStreamResource(new InputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        return randomAccessFile.read();
+                    }
 
-                    return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
-                            .headers(headers)
-                            .contentLength(contentLength)
-                            .body(new InputStreamResource(inputStream));
-                }
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        return randomAccessFile.read(b, off, len);
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+                        randomAccessFile.close();
+                    }
+                });
+
+                headers.add(HttpHeaders.CONTENT_RANGE, "bytes " + rangeStart + "-" + rangeEnd + "/" + fileSize);
+                headers.add(HttpHeaders.ACCEPT_RANGES, "bytes");
+
+                return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                        .headers(headers)
+                        .contentLength(contentLength)
+                        .body(inputStreamResource);
             } else {
-                // Full content (first request, no range)
                 headers.add(HttpHeaders.ACCEPT_RANGES, "bytes");
                 headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileSize));
 
+                Resource mediaResource = new InputStreamResource(Files.newInputStream(mediaPath));
                 return ResponseEntity.ok()
                         .headers(headers)
                         .contentLength(fileSize)
                         .body(mediaResource);
             }
-        } catch (MediaNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error reading media file", e);
         }
     }
 
-    @ExceptionHandler(MediaNotFoundException.class)
-    public ResponseEntity<String> handleMediaNotFoundException(MediaNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
-    }
 }

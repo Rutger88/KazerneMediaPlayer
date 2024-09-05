@@ -1,6 +1,5 @@
 package be.intec.kazernemediaplayer.config;
 
-import be.intec.kazernemediaplayer.model.User;
 import be.intec.kazernemediaplayer.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -12,10 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Optional;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -40,12 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwtToken = authorizationHeader.substring(7);
 
-            if (jwtToken.trim().isEmpty()) {
-                logger.warn("JWT token is missing or empty.");
-                filterChain.doFilter(request, response);
-                return;
-            }
-
             try {
                 username = jwtUtil.extractUsername(jwtToken);
             } catch (ExpiredJwtException e) {
@@ -60,10 +54,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userService.findByUsername(username);
-            if (user != null && jwtUtil.validateToken(jwtToken, user)) {
+            UserDetails userDetails = userService.loadUserByUsername(username);
+            if (jwtUtil.validateToken(jwtToken, Optional.of(userDetails))) {  // Wrap userDetails in Optional
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        user, null, Collections.emptyList());
+                        userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

@@ -14,4 +14,5 @@ public interface LibraryRepository extends JpaRepository<Library, Long> {
 
     List<Library> findByUserIdNot(Long userId);
     Optional<Library> findFirstByUserId(Long userId);
+
 }

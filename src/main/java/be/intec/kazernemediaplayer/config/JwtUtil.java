@@ -5,9 +5,11 @@ import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Component
 public class JwtUtil {
@@ -72,8 +74,16 @@ public class JwtUtil {
         return extractClaims(token).getExpiration().before(new Date());
     }
 
-    public boolean validateToken(String token, User user) {
-        String username = extractUsername(token);
-        return username.equals(user.getUsername()) && !isTokenExpired(token);
+    public boolean validateToken(String token, Optional<UserDetails> userDetailsOptional) {
+        if (userDetailsOptional.isPresent()) {
+            UserDetails userDetails = userDetailsOptional.get();  // Unwrap the Optional<UserDetails>
+            String username = extractUsername(token);
+
+            // Compare username and check if the token is not expired
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        }
+
+        // If userDetails is not present, return false
+        return false;
     }
 }

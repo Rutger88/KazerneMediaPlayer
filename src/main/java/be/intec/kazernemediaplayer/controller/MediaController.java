@@ -1,6 +1,10 @@
 package be.intec.kazernemediaplayer.controller;
 
+import be.intec.kazernemediaplayer.config.CustomUserDetails;
+import be.intec.kazernemediaplayer.model.Library;
 import be.intec.kazernemediaplayer.model.MediaFile;
+import be.intec.kazernemediaplayer.repository.LibraryRepository;
+import be.intec.kazernemediaplayer.repository.MediaRepository;
 import be.intec.kazernemediaplayer.service.MediaNotFoundException;
 import be.intec.kazernemediaplayer.service.MediaService;
 import org.slf4j.Logger;
@@ -13,8 +17,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
@@ -30,10 +38,13 @@ public class MediaController {
 
     private static final Logger logger = LoggerFactory.getLogger(MediaController.class);
     private final MediaService mediaService;
-
+    private final LibraryRepository libraryRepository;
+    private final MediaRepository mediaRepository;
     @Autowired
-    public MediaController(MediaService mediaService) {
+    public MediaController(MediaService mediaService, LibraryRepository libraryRepository, MediaRepository mediaRepository) {
         this.mediaService = mediaService;
+        this.libraryRepository = libraryRepository;
+        this.mediaRepository = mediaRepository;
     }
 
     @GetMapping
@@ -80,32 +91,38 @@ public class MediaController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/next/{currentId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/next/{currentId}")
     public ResponseEntity<MediaFile> playNext(@PathVariable Long currentId) {
-        logger.info("Attempting to fetch next media file after currentId: {}", currentId);
-        try {
-            MediaFile nextMediaFile = mediaService.playNext(currentId);
-            nextMediaFile.setUrl("/media/stream/" + nextMediaFile.getId());  // Set the URL here
-            logger.info("Fetched next media file with ID: {} after currentId: {}", nextMediaFile.getId(), currentId);
-            return ResponseEntity.ok(nextMediaFile);
-        } catch (MediaNotFoundException ex) {
-            logger.error("Next media file not found after id: {}", currentId, ex);
-            return ResponseEntity.notFound().build();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
+
+        // Cast the principal to CustomUserDetails
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getId(); // Get the userId from CustomUserDetails
+
+        // Delegate to the service layer, passing userId to enforce the correct library access
+        MediaFile nextMedia = mediaService.playNext(currentId, userId);
+        return ResponseEntity.ok(nextMedia);
     }
 
     @GetMapping("/previous/{currentId}")
     public ResponseEntity<MediaFile> playPrevious(@PathVariable Long currentId) {
-        logger.info("Received request to play previous media before id: {}", currentId);
-        MediaFile previousMediaFile = mediaService.playPrevious(currentId);
-        if (previousMediaFile == null) {
-            logger.error("Previous media file not found before id: {}", currentId);
-            return ResponseEntity.notFound().build();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
-        // Update the URL for streaming
-        previousMediaFile.setUrl("/media/stream/" + previousMediaFile.getId());
-        return ResponseEntity.ok(previousMediaFile);
+
+        // Cast the principal to CustomUserDetails
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = userDetails.getId(); // Get the userId from CustomUserDetails
+
+        // Delegate to the service layer, passing userId to enforce the correct library access
+        MediaFile previousMedia = mediaService.playPrevious(currentId, userId);
+        return ResponseEntity.ok(previousMedia);
     }
+
 
     @GetMapping(value = "/stream/{mediaId}")
     public ResponseEntity<Resource> streamMedia(@PathVariable Long mediaId) {

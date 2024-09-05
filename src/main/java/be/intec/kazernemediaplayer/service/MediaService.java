@@ -120,38 +120,54 @@ public class MediaService {
         currentlyPlaying = null;
     }
 
-    public MediaFile playNext(Long currentId) {
-        logger.info("Fetching next media file after ID: " + currentId);
-        Optional<MediaFile> nextMediaOpt = mediaRepository.findFirstByIdGreaterThanOrderByIdAsc(currentId);
+    public MediaFile playNext(Long currentId, Long userId) {
+        logger.info("Fetching next media file for userId: {}, after ID: {}", userId, currentId);
+
+        // Fetch the user's library
+        Library userLibrary = libraryRepository.findFirstByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Library not found for user"));
+
+        logger.info("User's library ID: {}", userLibrary.getId());
+
+        // Fetch the next media file only from the user's library
+        Optional<MediaFile> nextMediaOpt = mediaRepository.findFirstByIdGreaterThanAndLibraryIdOrderByIdAsc(currentId, userLibrary.getId());
 
         if (nextMediaOpt.isPresent()) {
             MediaFile nextMedia = nextMediaOpt.get();
-            logger.info("Next media ID: " + nextMedia.getId());
+            logger.info("Next media ID: {} found for user: {}", nextMedia.getId(), userId);
             currentlyPlaying = nextMedia;
             return nextMedia;
         } else {
-            logger.info("No more media files available after ID: " + currentId);
-            throw new MediaNotFoundException("No more media files available.");
+            logger.info("No more media files available after ID: {} for user: {}", currentId, userId);
+            throw new MediaNotFoundException("No more media files available in your library.");
         }
     }
 
-    public MediaFile playPrevious(Long currentId) {
-        logger.info("Fetching previous media file before ID: {}", currentId);
-        Optional<MediaFile> previousMediaOpt = mediaRepository.findFirstByIdLessThanOrderByIdDesc(currentId);
+    public MediaFile playPrevious(Long currentId, Long userId) {
+        logger.info("Fetching previous media file for userId: {}, before ID: {}", userId, currentId);
+
+        // Fetch the user's library
+        Library userLibrary = libraryRepository.findFirstByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Library not found for user"));
+
+        logger.info("User's library ID: {}", userLibrary.getId());
+
+        // Fetch the previous media file only from the user's library
+        Optional<MediaFile> previousMediaOpt = mediaRepository.findFirstByIdLessThanAndLibraryIdOrderByIdDesc(currentId, userLibrary.getId());
 
         if (previousMediaOpt.isPresent()) {
             MediaFile previousMedia = previousMediaOpt.get();
-            logger.info("Previous media ID: {}", previousMedia.getId());
-            previousMedia.setUrl("/media/stream/" + previousMedia.getId());  // Ensure correct URL
+            logger.info("Previous media ID: {} found for user: {}", previousMedia.getId(), userId);
             currentlyPlaying = previousMedia;
             return previousMedia;
         } else {
-            logger.info("No previous media found, fetching the last media file.");
-            currentlyPlaying = mediaRepository.findFirstByOrderByIdDesc()
-                    .orElseThrow(() -> new MediaNotFoundException("No media files found."));
+            logger.info("No previous media found, fetching the last media file for user: {}", userId);
+            currentlyPlaying = mediaRepository.findFirstByLibraryIdOrderByIdDesc(userLibrary.getId())
+                    .orElseThrow(() -> new MediaNotFoundException("No media files found in your library."));
             return currentlyPlaying;
         }
     }
+
 
     public List<MediaFile> findAll() {
         return mediaRepository.findAll();
