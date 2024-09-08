@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import be.intec.kazernemediaplayer.dto.LoginResponse;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -60,6 +61,7 @@ public class UserService implements UserDetailsService {
     }*/
 
 
+    @Transactional // Ensure the user and library are saved in one transaction
     public User registerUser(String username, String password, String email) {
         // Check if the username already exists
         if (userRepository.findByUsername(username) != null) {
@@ -77,14 +79,15 @@ public class UserService implements UserDetailsService {
 
         // Create a default library for the new user
         Library library = new Library();
-        library.setName("Default Library");
+        library.setName("Default Library for " + username);  // Customizing the library name
         library.setUser(user);  // Associate the library with the user
 
         // Save the library to the database
         libraryRepository.save(library);
 
-        return user;
+        return user;  // Return the saved user
     }
+
 
     public LoginResponse loginUser(String username, String password) {
         User user = userRepository.findByUsername(username);
