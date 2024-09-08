@@ -167,7 +167,12 @@ public class MediaService {
             return currentlyPlaying;
         }
     }
-
+    public String getCurrentlyPlayingFileName() {
+        if (currentlyPlaying != null) {
+            return currentlyPlaying.getName();
+        }
+        return "No file is currently playing";
+    }
 
     public List<MediaFile> findAll() {
         return mediaRepository.findAll();

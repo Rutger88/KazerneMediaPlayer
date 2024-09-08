@@ -21,7 +21,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new ArrayList<>(); // return the actual roles/authorities if needed
+        return new ArrayList<>(); // return the actual roles/authorities if needed, for example ROLE_ADMIN,
+                                    // ROLE_USER, READ_PRIVILEGE, DELETE_PRIVILEGE, WRITE_PRIVILEGE
     }
 
     @Override

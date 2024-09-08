@@ -3,6 +3,7 @@ package be.intec.kazernemediaplayer.controller;
 import be.intec.kazernemediaplayer.model.Library;
 import be.intec.kazernemediaplayer.service.LibraryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,17 +21,17 @@ public class LibraryController {
     }
 
     // Get all libraries for a specific user
-    @GetMapping("/user/{userId}")
+    @GetMapping("/getlibraries/{userId}")
     public ResponseEntity<List<Library>> getSharedLibraries(@PathVariable Long userId) {
         List<Library> libraries = libraryService.getSharedLibraries(userId);
         return ResponseEntity.ok(libraries);
     }
 
-    // Add a new library for a specific user
-    @PostMapping("/user/{userId}")
+    @PostMapping("/add/{userId}")
     public ResponseEntity<Library> addLibrary(@PathVariable Long userId, @RequestBody Library library) {
+        // Adding the library for the user
         Library savedLibrary = libraryService.addLibrary(library, userId);
-        return ResponseEntity.ok(savedLibrary);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedLibrary);
     }
 
     // Get a specific library by ID
@@ -48,7 +49,7 @@ public class LibraryController {
         Library updatedLibrary = libraryService.updateLibrary(library);
         return ResponseEntity.ok(updatedLibrary);
     }
-    @PostMapping("/share")
+    @PostMapping("/share/{userId}")
     public ResponseEntity<String> shareLibraryWithUser(
             @RequestParam Long libraryId,
             @RequestParam Long targetUserId) {

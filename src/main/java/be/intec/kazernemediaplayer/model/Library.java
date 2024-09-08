@@ -18,7 +18,7 @@ public class Library {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "library", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<MediaFile> mediaFiles = new ArrayList<>();
 
@@ -66,12 +66,13 @@ public class Library {
     // Add a media file to the library
     public void addMediaFile(MediaFile mediaFile) {
         mediaFiles.add(mediaFile);
-        mediaFile.setLibrary(this);
+        mediaFile.setLibrary(this);  // Set the correct library reference
     }
 
     // Remove a media file from the library
     public void removeMediaFile(MediaFile mediaFile) {
         mediaFiles.remove(mediaFile);
-        mediaFile.setLibrary(null);
+        mediaFile.setLibrary(null);  // Remove the library reference
     }
 }
+

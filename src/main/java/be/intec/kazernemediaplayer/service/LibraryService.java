@@ -35,11 +35,16 @@ public class LibraryService {
     }
 
     public Library addLibrary(Library library, Long userId) {
+        // Null check for the library object
+        if (library == null) {
+            throw new IllegalArgumentException("Library cannot be null");
+        }
+
         // Fetch user and handle non-existence
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User with ID " + userId + " not found"));
 
-        // Set user to library and save
+        // Set the user to the library and save it
         library.setUser(user);
         return libraryRepository.save(library);
     }

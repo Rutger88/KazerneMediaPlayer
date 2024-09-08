@@ -161,7 +161,11 @@ public class MediaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+    @GetMapping("/currently-playing")
+    public ResponseEntity<String> getCurrentlyPlayingFileName() {
+        String fileName = mediaService.getCurrentlyPlayingFileName();
+        return ResponseEntity.ok(fileName);
+    }
 
 
     @DeleteMapping("/delete/{mediaId}")
