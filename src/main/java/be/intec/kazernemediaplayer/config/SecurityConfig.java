@@ -38,7 +38,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for simplicity in a token-based application
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/media/**", "/movies/**", "/user/register", "/user/login", "/libraries/add/**" ).permitAll()
+                        .requestMatchers("/media/**", "/movies/**", "/user/register", "/user/login", "/libraries/add/**", "/libraries/delete/**" ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout.permitAll())

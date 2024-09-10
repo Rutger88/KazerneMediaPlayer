@@ -64,7 +64,7 @@ public class LibraryController {
     }
 
     // Delete a library by ID
-    @DeleteMapping("/{libraryId}")
+    @DeleteMapping("/delete/{libraryId}")
     public ResponseEntity<Void> deleteLibrary(@PathVariable Long libraryId) {
         libraryService.deleteLibrary(libraryId);
         return ResponseEntity.noContent().build();  // Return 204 No Content on successful deletion
